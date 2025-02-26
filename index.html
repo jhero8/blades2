@@ -401,6 +401,310 @@
         .pulse {
             animation: pulse 1s infinite;
         }
+        
+        /* Dashboard section */
+        .dashboard-section {
+            margin-top: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .dashboard {
+            margin-top: 16px;
+        }
+        
+        .dashboard.hidden {
+            display: none;
+        }
+        
+        /* Chart containers */
+        .chart-container {
+            margin-bottom: 32px;
+            background-color: #fcfcfc;
+            border-radius: 6px;
+            padding: 12px;
+            border: 1px solid #f0f0f0;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .chart {
+            height: 200px;
+            width: 100%;
+            position: relative;
+        }
+        
+        /* Bar chart styling */
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 150px;
+            padding-bottom: 24px;
+            position: relative;
+        }
+        
+        .bar-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 4px;
+        }
+        
+        .bar {
+            width: 100%;
+            max-width: 32px;
+            background: linear-gradient(to top, #4f9cf9, #a651e6);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s;
+        }
+        
+        .bar-label {
+            font-size: 10px;
+            color: #718096;
+            margin-top: 6px;
+            text-align: center;
+            transform: rotate(-45deg);
+            transform-origin: top left;
+            position: absolute;
+            bottom: 0;
+            white-space: nowrap;
+        }
+        
+        .bar-value {
+            font-size: 10px;
+            color: #4a5568;
+            margin-top: 4px;
+            position: absolute;
+            top: -20px;
+        }
+        
+        /* Pie chart styling */
+        .pie-chart {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 150px;
+        }
+        
+        .pie-container {
+            position: relative;
+            width: 130px;
+            height: 130px;
+        }
+        
+        .pie-slice {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(50% 50%, 100% 0, 100% 100%);
+            transform-origin: center;
+        }
+        
+        .pie-legend {
+            margin-left: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 6px;
+            border-radius: 2px;
+        }
+        
+        .legend-label {
+            font-size: 12px;
+            color: #4a5568;
+        }
+        
+        /* Line chart styling */
+        .line-chart {
+            height: 150px;
+            position: relative;
+            margin-top: 24px;
+            padding-left: 24px;
+        }
+        
+        .line-chart-axis {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: #e2e8f0;
+        }
+        
+        .line-chart-axis-horizontal {
+            position: absolute;
+            left: 24px;
+            right: 0;
+            bottom: 0;
+            height: 1px;
+            background-color: #e2e8f0;
+        }
+        
+        .line-chart-line {
+            position: absolute;
+            stroke: #4f9cf9;
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        .line-chart-area {
+            position: absolute;
+            fill: rgba(79, 156, 249, 0.1);
+        }
+        
+        .line-chart-point {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: #4f9cf9;
+            border-radius: 50%;
+            transform: translate(-3px, -3px);
+        }
+        
+        .axis-label {
+            position: absolute;
+            font-size: 10px;
+            color: #718096;
+        }
+        
+        /* Progress indicators */
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+        
+        .progress-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            background-color: #f7fafc;
+            border-radius: 4px;
+            margin: 0 4px;
+        }
+        
+        .progress-value {
+            font-size: 18px;
+            font-weight: 500;
+            color: #4f9cf9;
+        }
+        
+        .progress-label {
+            font-size: 12px;
+            color: #718096;
+        }
+        
+        /* Comparison chart styling */
+        .comparison-chart {
+            display: flex;
+            height: 150px;
+            align-items: flex-end;
+            position: relative;
+        }
+        
+        .comparison-bar-group {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .comparison-bar {
+            width: 24px;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s;
+        }
+        
+        .comparison-bar.primary {
+            background-color: #4f9cf9;
+        }
+        
+        .comparison-bar.secondary {
+            background-color: #a651e6;
+        }
+        
+        .comparison-legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        
+        .comparison-legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 8px;
+        }
+        
+        .comparison-legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 6px;
+        }
+        
+        /* Stats cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 6px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #4f9cf9;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 4px;
+        }
+        
+        /* Empty state styling */
+        .empty-chart {
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #a0aec0;
+        }
+        
+        .empty-chart svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 8px;
+            stroke: #cbd5e0;
+        }
+        
+        .empty-chart-text {
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -526,6 +830,48 @@
             </div>
         </div>
 
+        <!-- Dashboard section -->
+        <div class="dashboard-section">
+            <button id="toggleDashboardBtn" class="btn btn-secondary">Show Dashboard</button>
+            
+            <div id="dashboard" class="dashboard hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Your Progress Dashboard</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="noDataMsg" class="no-entries">No data available yet. Add entries to see your dashboard.</div>
+                        
+                        <div id="dashboardCharts" class="hidden">
+                            <!-- Frequency chart -->
+                            <div class="chart-container">
+                                <h3 class="chart-title">Daily Urination Frequency</h3>
+                                <div class="chart" id="frequencyChart"></div>
+                            </div>
+                            
+                            <!-- Urgency levels chart -->
+                            <div class="chart-container">
+                                <h3 class="chart-title">Urgency Levels</h3>
+                                <div class="chart" id="urgencyChart"></div>
+                            </div>
+                            
+                            <!-- Fluid intake vs urination -->
+                            <div class="chart-container">
+                                <h3 class="chart-title">Fluid Intake vs Urination</h3>
+                                <div class="chart" id="correlationChart"></div>
+                            </div>
+                            
+                            <!-- Stream strength distribution -->
+                            <div class="chart-container">
+                                <h3 class="chart-title">Urine Stream Strength</h3>
+                                <div class="chart" id="streamChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="export-section">
             <button id="toggleExportBtn" class="btn btn-secondary">Show Export Data</button>
             <textarea id="exportArea" class="export-textarea"></textarea>
@@ -547,6 +893,10 @@
         const timerBtn = document.getElementById('timerBtn');
         const timerIndicator = document.getElementById('timerIndicator');
         const urineVolumeInput = document.getElementById('urineVolume');
+        const toggleDashboardBtn = document.getElementById('toggleDashboardBtn');
+        const dashboard = document.getElementById('dashboard');
+        const noDataMsg = document.getElementById('noDataMsg');
+        const dashboardCharts = document.getElementById('dashboardCharts');
         
         // Timer variables
         let timerActive = false;
@@ -801,6 +1151,11 @@
                     entryEl.innerHTML = entryHtml;
                     entriesList.appendChild(entryEl);
                 }
+                
+                // If dashboard is visible, update it too
+                if (!dashboard.classList.contains('hidden')) {
+                    renderDashboard();
+                }
             } catch (error) {
                 console.error('Error rendering entries', error);
                 showMessage('Error displaying entries');
@@ -914,6 +1269,496 @@
                 showMessage('Error creating export');
             }
         });
+        
+        // Dashboard toggle functionality
+        toggleDashboardBtn.addEventListener('click', function() {
+            try {
+                if (dashboard.classList.contains('hidden')) {
+                    dashboard.classList.remove('hidden');
+                    toggleDashboardBtn.textContent = 'Hide Dashboard';
+                    renderDashboard();
+                } else {
+                    dashboard.classList.add('hidden');
+                    toggleDashboardBtn.textContent = 'Show Dashboard';
+                }
+            } catch (error) {
+                console.error('Error toggling dashboard', error);
+                showMessage('Error showing dashboard');
+            }
+        });
+        
+        // Dashboard-related functions
+        function renderDashboard() {
+            try {
+                // Check if we have any data
+                if (entries.length === 0) {
+                    noDataMsg.style.display = 'block';
+                    dashboardCharts.classList.add('hidden');
+                    return;
+                }
+
+                // We have data, show the charts
+                noDataMsg.style.display = 'none';
+                dashboardCharts.classList.remove('hidden');
+
+                // Render each chart
+                renderFrequencyChart();
+                renderUrgencyChart();
+                renderCorrelationChart();
+                renderStreamChart();
+            } catch (error) {
+                console.error('Error rendering dashboard', error);
+                showMessage('Error displaying dashboard');
+            }
+        }
+
+        function renderFrequencyChart() {
+            try {
+                const frequencyChartEl = document.getElementById('frequencyChart');
+                frequencyChartEl.innerHTML = '';
+
+                // Group entries by date
+                const entriesByDate = {};
+                let hasUrineData = false;
+
+                entries.forEach(entry => {
+                    if (entry.urineVolume) {
+                        hasUrineData = true;
+                        
+                        if (!entriesByDate[entry.date]) {
+                            entriesByDate[entry.date] = 0;
+                        }
+                        entriesByDate[entry.date]++;
+                    }
+                });
+
+                if (!hasUrineData) {
+                    renderEmptyChart(frequencyChartEl, 'No urination data recorded yet');
+                    return;
+                }
+
+                // Convert to array and sort by date
+                const dateFrequencies = Object.entries(entriesByDate)
+                    .sort((a, b) => a[0].localeCompare(b[0]))
+                    .slice(-7); // Only show the last 7 days with data
+
+                // Create bar chart container
+                const barChart = document.createElement('div');
+                barChart.className = 'bar-chart';
+                
+                // Find the maximum frequency for scaling
+                const maxFrequency = Math.max(...dateFrequencies.map(df => df[1]));
+                
+                // Add bars
+                dateFrequencies.forEach(([date, count]) => {
+                    const barContainer = document.createElement('div');
+                    barContainer.className = 'bar-container';
+                    
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    const barHeight = (count / maxFrequency) * 100;
+                    bar.style.height = `${barHeight}%`;
+                    
+                    const barValue = document.createElement('div');
+                    barValue.className = 'bar-value';
+                    barValue.textContent = count;
+                    
+                    const barLabel = document.createElement('div');
+                    barLabel.className = 'bar-label';
+                    barLabel.textContent = formatDate(date);
+                    
+                    barContainer.appendChild(bar);
+                    barContainer.appendChild(barValue);
+                    barContainer.appendChild(barLabel);
+                    barChart.appendChild(barContainer);
+                });
+                
+                frequencyChartEl.appendChild(barChart);
+            } catch (error) {
+                console.error('Error rendering frequency chart', error);
+                const frequencyChartEl = document.getElementById('frequencyChart');
+                renderEmptyChart(frequencyChartEl, 'Could not generate chart');
+            }
+        }
+
+        function renderUrgencyChart() {
+            try {
+                const urgencyChartEl = document.getElementById('urgencyChart');
+                urgencyChartEl.innerHTML = '';
+
+                // Count urgency levels
+                const urgencyCounts = { '0': 0, '1': 0, '2': 0, '3': 0 };
+                let hasUrgencyData = false;
+
+                entries.forEach(entry => {
+                    if (entry.urgency) {
+                        hasUrgencyData = true;
+                        urgencyCounts[entry.urgency]++;
+                    }
+                });
+
+                if (!hasUrgencyData) {
+                    renderEmptyChart(urgencyChartEl, 'No urgency data recorded yet');
+                    return;
+                }
+
+                // Calculate total for percentages
+                const total = Object.values(urgencyCounts).reduce((sum, count) => sum + count, 0);
+                if (total === 0) {
+                    renderEmptyChart(urgencyChartEl, 'No urgency data recorded yet');
+                    return;
+                }
+
+                // Create pie chart container
+                const pieChart = document.createElement('div');
+                pieChart.className = 'pie-chart';
+                
+                const pieContainer = document.createElement('div');
+                pieContainer.className = 'pie-container';
+                
+                const legend = document.createElement('div');
+                legend.className = 'pie-legend';
+                
+                // Colors for urgency levels
+                const colors = {
+                    '0': '#48bb78', // Green for none
+                    '1': '#ecc94b', // Yellow for mild
+                    '2': '#ed8936', // Orange for moderate
+                    '3': '#e53e3e'  // Red for severe
+                };
+                
+                // Add pie slices
+                let cumulativePercent = 0;
+                let hasNonZeroValue = false;
+
+                Object.entries(urgencyCounts).forEach(([level, count]) => {
+                    if (count > 0) {
+                        hasNonZeroValue = true;
+                        const percent = (count / total) * 100;
+                        const pieSlice = document.createElement('div');
+                        pieSlice.className = 'pie-slice';
+                        pieSlice.style.backgroundColor = colors[level];
+                        
+                        // Calculate rotation for pie slice
+                        pieSlice.style.transform = `rotate(${cumulativePercent * 3.6}deg)`;
+                        pieSlice.style.clipPath = `polygon(50% 50%, 100% 0, ${percent >= 50 ? '0 0, 0 100%, ' : ''}100% 100%)`;
+                        pieSlice.style.width = percent >= 50 ? '100%' : `${percent * 2}%`;
+                        
+                        cumulativePercent += percent;
+                        pieContainer.appendChild(pieSlice);
+                        
+                        // Add legend item
+                        const legendItem = document.createElement('div');
+                        legendItem.className = 'legend-item';
+                        
+                        const legendColor = document.createElement('div');
+                        legendColor.className = 'legend-color';
+                        legendColor.style.backgroundColor = colors[level];
+                        
+                        const legendLabel = document.createElement('div');
+                        legendLabel.className = 'legend-label';
+                        let levelText = '';
+                        switch(level) {
+                            case '0': levelText = 'None'; break;
+                            case '1': levelText = 'Mild'; break;
+                            case '2': levelText = 'Moderate'; break;
+                            case '3': levelText = 'Severe'; break;
+                        }
+                        legendLabel.textContent = `${levelText} (${count})`;
+                        
+                        legendItem.appendChild(legendColor);
+                        legendItem.appendChild(legendLabel);
+                        legend.appendChild(legendItem);
+                    }
+                });
+                
+                if (!hasNonZeroValue) {
+                    renderEmptyChart(urgencyChartEl, 'No urgency data recorded yet');
+                    return;
+                }
+                
+                pieChart.appendChild(pieContainer);
+                pieChart.appendChild(legend);
+                urgencyChartEl.appendChild(pieChart);
+            } catch (error) {
+                console.error('Error rendering urgency chart', error);
+                const urgencyChartEl = document.getElementById('urgencyChart');
+                renderEmptyChart(urgencyChartEl, 'Could not generate chart');
+            }
+        }
+
+        function renderCorrelationChart() {
+            try {
+                const correlationChartEl = document.getElementById('correlationChart');
+                correlationChartEl.innerHTML = '';
+
+                // Group entries by date
+                const dailyData = {};
+                let hasData = false;
+
+                entries.forEach(entry => {
+                    if (!dailyData[entry.date]) {
+                        dailyData[entry.date] = {
+                            date: entry.date,
+                            drinkAmount: 0,
+                            urinationCount: 0
+                        };
+                    }
+                    
+                    if (entry.drinkAmount) {
+                        hasData = true;
+                        dailyData[entry.date].drinkAmount += parseInt(entry.drinkAmount) || 0;
+                    }
+                    
+                    if (entry.urineVolume) {
+                        hasData = true;
+                        dailyData[entry.date].urinationCount++;
+                    }
+                });
+
+                if (!hasData) {
+                    renderEmptyChart(correlationChartEl, 'Not enough data for correlation');
+                    return;
+                }
+
+                // Convert to array and sort by date
+                const dailyDataArray = Object.values(dailyData)
+                    .filter(day => day.drinkAmount > 0 || day.urinationCount > 0)
+                    .sort((a, b) => a.date.localeCompare(b.date))
+                    .slice(-5); // Last 5 days with data
+                    
+                if (dailyDataArray.length === 0) {
+                    renderEmptyChart(correlationChartEl, 'Not enough data for correlation');
+                    return;
+                }
+
+                // Create comparison chart
+                const comparisonChart = document.createElement('div');
+                comparisonChart.className = 'comparison-chart';
+                
+                // Find max values for scaling
+                const maxDrink = Math.max(...dailyDataArray.map(day => day.drinkAmount));
+                const maxCount = Math.max(...dailyDataArray.map(day => day.urinationCount));
+                
+                // Scale factors - drink amount is usually much larger than urination count
+                const drinkScale = maxDrink > 0 ? 100 / maxDrink : 0;
+                const countScale = maxCount > 0 ? 100 / maxCount : 0;
+                
+                // Add bar groups
+                dailyDataArray.forEach(day => {
+                    const barGroup = document.createElement('div');
+                    barGroup.className = 'comparison-bar-group';
+                    
+                    // Drink amount bar
+                    const drinkBar = document.createElement('div');
+                    drinkBar.className = 'comparison-bar primary';
+                    const drinkHeight = Math.max(day.drinkAmount * drinkScale, 5); // Minimum 5px height for visibility
+                    drinkBar.style.height = `${drinkHeight}%`;
+                    drinkBar.title = `${day.drinkAmount} ml`;
+                    
+                    // Urination count bar
+                    const countBar = document.createElement('div');
+                    countBar.className = 'comparison-bar secondary';
+                    const countHeight = Math.max(day.urinationCount * countScale * 10, 5); // Scale up for visibility
+                    countBar.style.height = `${countHeight}%`;
+                    countBar.title = `${day.urinationCount} times`;
+                    
+                    barGroup.appendChild(drinkBar);
+                    barGroup.appendChild(countBar);
+                    
+                    // Date label
+                    const dateLabel = document.createElement('div');
+                    dateLabel.className = 'bar-label';
+                    dateLabel.textContent = formatDate(day.date);
+                    dateLabel.style.position = 'absolute';
+                    dateLabel.style.bottom = '-20px';
+                    barGroup.appendChild(dateLabel);
+                    
+                    comparisonChart.appendChild(barGroup);
+                });
+                
+                // Add legend
+                const legend = document.createElement('div');
+                legend.className = 'comparison-legend';
+                
+                const drinkLegend = document.createElement('div');
+                drinkLegend.className = 'comparison-legend-item';
+                const drinkColor = document.createElement('div');
+                drinkColor.className = 'comparison-legend-color';
+                drinkColor.style.backgroundColor = '#4f9cf9';
+                const drinkLabel = document.createElement('span');
+                drinkLabel.textContent = 'Fluid intake (ml)';
+                drinkLegend.appendChild(drinkColor);
+                drinkLegend.appendChild(drinkLabel);
+                
+                const countLegend = document.createElement('div');
+                countLegend.className = 'comparison-legend-item';
+                const countColor = document.createElement('div');
+                countColor.className = 'comparison-legend-color';
+                countColor.style.backgroundColor = '#a651e6';
+                const countLabel = document.createElement('span');
+                countLabel.textContent = 'Urination frequency';
+                countLegend.appendChild(countColor);
+                countLegend.appendChild(countLabel);
+                
+                legend.appendChild(drinkLegend);
+                legend.appendChild(countLegend);
+                
+                correlationChartEl.appendChild(comparisonChart);
+                correlationChartEl.appendChild(legend);
+            } catch (error) {
+                console.error('Error rendering correlation chart', error);
+                const correlationChartEl = document.getElementById('correlationChart');
+                renderEmptyChart(correlationChartEl, 'Could not generate chart');
+            }
+        }
+
+        function renderStreamChart() {
+            try {
+                const streamChartEl = document.getElementById('streamChart');
+                streamChartEl.innerHTML = '';
+
+                // Count stream types
+                const streamCounts = { 'Strong': 0, 'Intermittent': 0, 'Weak': 0 };
+                let hasStreamData = false;
+                
+                entries.forEach(entry => {
+                    if (entry.urineStream && streamCounts.hasOwnProperty(entry.urineStream)) {
+                        hasStreamData = true;
+                        streamCounts[entry.urineStream]++;
+                    }
+                });
+                
+                if (!hasStreamData) {
+                    renderEmptyChart(streamChartEl, 'No stream data recorded yet');
+                    return;
+                }
+                
+                // Calculate total
+                const total = Object.values(streamCounts).reduce((sum, count) => sum + count, 0);
+                if (total === 0) {
+                    renderEmptyChart(streamChartEl, 'No stream data recorded yet');
+                    return;
+                }
+                
+                // Create bar chart for stream distribution
+                const barChart = document.createElement('div');
+                barChart.className = 'bar-chart';
+                
+                // Colors for stream types
+                const colors = {
+                    'Strong': '#48bb78',
+                    'Intermittent': '#ecc94b',
+                    'Weak': '#e53e3e'
+                };
+                
+                // Add bars
+                Object.entries(streamCounts).forEach(([type, count]) => {
+                    if (count > 0) {
+                        const percent = (count / total) * 100;
+                        
+                        const barContainer = document.createElement('div');
+                        barContainer.className = 'bar-container';
+                        
+                        const bar = document.createElement('div');
+                        bar.className = 'bar';
+                        bar.style.height = `${percent}%`;
+                        bar.style.backgroundColor = colors[type];
+                        
+                        const barValue = document.createElement('div');
+                        barValue.className = 'bar-value';
+                        barValue.textContent = `${Math.round(percent)}%`;
+                        
+                        const barLabel = document.createElement('div');
+                        barLabel.className = 'bar-label';
+                        barLabel.textContent = type;
+                        barLabel.style.transform = 'none';
+                        
+                        barContainer.appendChild(bar);
+                        barContainer.appendChild(barValue);
+                        barContainer.appendChild(barLabel);
+                        barChart.appendChild(barContainer);
+                    }
+                });
+                
+                streamChartEl.appendChild(barChart);
+                
+                // Add progress indicator
+                const progressSection = document.createElement('div');
+                progressSection.className = 'progress-indicator';
+                
+                // Try to find trends - only if enough entries
+                const recentEntries = entries
+                    .filter(e => e.urineStream)
+                    .sort((a, b) => a.date + a.time < b.date + b.time ? 1 : -1);
+                    
+                if (recentEntries.length >= 5) {
+                    const lastFive = recentEntries.slice(0, 5);
+                    const strongCount = lastFive.filter(e => e.urineStream === 'Strong').length;
+                    const weakCount = lastFive.filter(e => e.urineStream === 'Weak').length;
+                    
+                    const trendItem = document.createElement('div');
+                    trendItem.className = 'progress-item';
+                    
+                    const trendValue = document.createElement('div');
+                    trendValue.className = 'progress-value';
+                    
+                    if (strongCount >= 3) {
+                        trendValue.textContent = '👍';
+                        trendValue.style.color = '#48bb78';
+                    } else if (weakCount >= 3) {
+                        trendValue.textContent = '👎';
+                        trendValue.style.color = '#e53e3e';
+                    } else {
+                        trendValue.textContent = '➡️';
+                        trendValue.style.color = '#ecc94b';
+                    }
+                    
+                    const trendLabel = document.createElement('div');
+                    trendLabel.className = 'progress-label';
+                    trendLabel.textContent = 'Recent Trend';
+                    
+                    trendItem.appendChild(trendValue);
+                    trendItem.appendChild(trendLabel);
+                    progressSection.appendChild(trendItem);
+                    
+                    streamChartEl.appendChild(progressSection);
+                }
+            } catch (error) {
+                console.error('Error rendering stream chart', error);
+                const streamChartEl = document.getElementById('streamChart');
+                renderEmptyChart(streamChartEl, 'Could not generate chart');
+            }
+        }
+
+        function renderEmptyChart(container, message) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-chart';
+            
+            const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            icon.setAttribute('viewBox', '0 0 24 24');
+            icon.setAttribute('fill', 'none');
+            icon.setAttribute('stroke', 'currentColor');
+            icon.setAttribute('stroke-width', '2');
+            icon.setAttribute('stroke-linecap', 'round');
+            icon.setAttribute('stroke-linejoin', 'round');
+            
+            const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            iconPath.setAttribute('d', 'M21.21 15.89A10 10 0 1 1 8 2.83');
+            icon.appendChild(iconPath);
+            
+            const iconPath2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            iconPath2.setAttribute('d', 'M22 12A10 10 0 0 0 12 2v10z');
+            icon.appendChild(iconPath2);
+            
+            const text = document.createElement('div');
+            text.className = 'empty-chart-text';
+            text.textContent = message;
+            
+            emptyState.appendChild(icon);
+            emptyState.appendChild(text);
+            container.appendChild(emptyState);
+        }
         
         // Pull-to-refresh functionality
         function startRefreshing() {
