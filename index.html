@@ -23,12 +23,13 @@
             padding: 16px;
             max-width: 500px;
             margin: 0 auto;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
         }
         
         /* Header styles */
         header {
             text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
         
         .app-logo {
@@ -69,6 +70,25 @@
         .subtitle {
             font-size: 14px;
             color: #666;
+        }
+        
+        /* Privacy notice */
+        .privacy-notice {
+            text-align: center;
+            font-size: 12px;
+            color: #718096;
+            background-color: rgba(237, 242, 247, 0.7);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        
+        .privacy-notice svg {
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+            margin-right: 4px;
         }
         
         /* Button styles */
@@ -302,9 +322,47 @@
             font-size: 14px;
             display: none;
         }
+        
+        /* Pull to refresh styles */
+        .pull-to-refresh {
+            height: 0;
+            overflow: hidden;
+            text-align: center;
+            transition: height 0.3s;
+            position: relative;
+            margin-bottom: 8px;
+        }
+        
+        .pull-to-refresh-icon {
+            display: inline-block;
+            margin-top: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .pull-to-refresh.visible {
+            height: 60px;
+        }
+        
+        .pull-to-refresh.refreshing .pull-to-refresh-icon {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+    <div class="pull-to-refresh" id="pullToRefresh">
+        <div class="pull-to-refresh-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 4v6h-6"></path>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+        </div>
+    </div>
+    
     <div class="container">
         <header>
             <div class="app-logo">
@@ -315,6 +373,14 @@
             <h1>Bladder Diary</h1>
             <p class="subtitle">Track your bladder health</p>
         </header>
+        
+        <div class="privacy-notice">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Your data is stored privately and securely on your device only
+        </div>
         
         <div id="storageWarning" class="storage-warning">
             Storage is not working properly. Your entries won't be saved between sessions.
@@ -417,6 +483,12 @@
         const exportArea = document.getElementById('exportArea');
         const messageArea = document.getElementById('messageArea');
         const storageWarning = document.getElementById('storageWarning');
+        const pullToRefresh = document.getElementById('pullToRefresh');
+        
+        // Pull-to-refresh variables
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isRefreshing = false;
         
         // Check if localStorage is available
         let localStorageAvailable = false;
@@ -719,6 +791,64 @@
                 showMessage('Error creating export');
             }
         });
+        
+        // Pull-to-refresh functionality
+        function startRefreshing() {
+            if (isRefreshing) return;
+            isRefreshing = true;
+            
+            pullToRefresh.classList.add('refreshing');
+            
+            // Simulate a refresh (in this case, just reload entries from storage)
+            setTimeout(function() {
+                loadEntries();
+                pullToRefresh.classList.remove('visible', 'refreshing');
+                isRefreshing = false;
+                showMessage('Refreshed', 'success');
+            }, 800);
+        }
+        
+        // Touch event handlers for pull-to-refresh
+        document.addEventListener('touchstart', function(e) {
+            // Only trigger if we're at the top of the page
+            if (window.scrollY === 0) {
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchmove', function(e) {
+            if (touchStartY > 0 && !isRefreshing) {
+                touchEndY = e.touches[0].clientY;
+                const distance = touchEndY - touchStartY;
+                
+                // Only show pull indicator if we're pulling down
+                if (distance > 0) {
+                    pullToRefresh.classList.add('visible');
+                    
+                    // Calculate a rotation for the refresh icon based on pull distance
+                    const rotationDegrees = Math.min(distance * 2, 180);
+                    document.querySelector('.pull-to-refresh-icon').style.transform = `rotate(${rotationDegrees}deg)`;
+                }
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchend', function() {
+            if (touchStartY > 0 && touchEndY > 0 && !isRefreshing) {
+                const distance = touchEndY - touchStartY;
+                
+                // If pulled far enough, trigger refresh
+                if (distance > 60) {
+                    startRefreshing();
+                } else {
+                    // Otherwise, just hide the indicator
+                    pullToRefresh.classList.remove('visible');
+                }
+                
+                // Reset values
+                touchStartY = 0;
+                touchEndY = 0;
+            }
+        }, { passive: true });
         
         // Initialize app
         entryForm.style.display = 'none';
