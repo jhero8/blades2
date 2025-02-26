@@ -143,6 +143,45 @@
             display: inline-block;
         }
         
+        /* Timer button styles */
+        .timer-btn {
+            background-color: #4299e1;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+        }
+        
+        .timer-btn.active {
+            background-color: #e53e3e;
+        }
+        
+        .timer-btn svg {
+            margin-right: 4px;
+            width: 14px;
+            height: 14px;
+        }
+        
+        /* Timer indicator */
+        .timer-indicator {
+            display: inline-block;
+            margin-left: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #e53e3e;
+        }
+        
+        /* Timer field container */
+        .timer-field-container {
+            display: flex;
+            align-items: center;
+        }
+        
         /* Form styles */
         .form {
             background-color: white;
@@ -351,6 +390,17 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Pulse animation for active timer */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .pulse {
+            animation: pulse 1s infinite;
+        }
     </style>
 </head>
 <body>
@@ -429,7 +479,17 @@
             <div class="form-group grid">
                 <div>
                     <label class="form-label" for="urineVolume">Duration (seconds)</label>
-                    <input class="form-control" type="number" id="urineVolume" name="urineVolume" placeholder="seconds">
+                    <div class="timer-field-container">
+                        <input class="form-control" type="number" id="urineVolume" name="urineVolume" placeholder="seconds">
+                        <button type="button" id="timerBtn" class="timer-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            Start
+                        </button>
+                    </div>
+                    <div id="timerIndicator" class="timer-indicator hidden">0s</div>
                 </div>
                 <div>
                     <label class="form-label" for="urgency">Urgency (0-3)</label>
@@ -484,6 +544,14 @@
         const messageArea = document.getElementById('messageArea');
         const storageWarning = document.getElementById('storageWarning');
         const pullToRefresh = document.getElementById('pullToRefresh');
+        const timerBtn = document.getElementById('timerBtn');
+        const timerIndicator = document.getElementById('timerIndicator');
+        const urineVolumeInput = document.getElementById('urineVolume');
+        
+        // Timer variables
+        let timerActive = false;
+        let timerStart = 0;
+        let timerInterval = null;
         
         // Pull-to-refresh variables
         let touchStartY = 0;
@@ -505,6 +573,39 @@
         
         // In-memory storage (backup if localStorage fails)
         let entries = [];
+        
+        // Timer functionality
+        timerBtn.addEventListener('click', function() {
+            if (!timerActive) {
+                // Start timer
+                timerActive = true;
+                timerStart = Date.now();
+                timerBtn.textContent = 'Stop';
+                timerBtn.classList.add('active');
+                timerIndicator.classList.remove('hidden');
+                timerIndicator.classList.add('pulse');
+                
+                // Update timer display
+                timerInterval = setInterval(function() {
+                    const elapsedSeconds = Math.floor((Date.now() - timerStart) / 1000);
+                    timerIndicator.textContent = elapsedSeconds + 's';
+                }, 1000);
+            } else {
+                // Stop timer
+                timerActive = false;
+                clearInterval(timerInterval);
+                const elapsedSeconds = Math.floor((Date.now() - timerStart) / 1000);
+                
+                // Set value to input field
+                urineVolumeInput.value = elapsedSeconds;
+                
+                // Reset timer UI
+                timerBtn.textContent = 'Start';
+                timerBtn.classList.remove('active');
+                timerIndicator.classList.add('hidden');
+                timerIndicator.classList.remove('pulse');
+            }
+        });
         
         // Load entries from storage
         function loadEntries() {
@@ -574,6 +675,16 @@
                     toggleFormBtn.textContent = 'Cancel';
                     setCurrentDateTime();
                 } else {
+                    // Make sure timer is stopped if form is closed
+                    if (timerActive) {
+                        timerActive = false;
+                        clearInterval(timerInterval);
+                        timerBtn.textContent = 'Start';
+                        timerBtn.classList.remove('active');
+                        timerIndicator.classList.add('hidden');
+                        timerIndicator.classList.remove('pulse');
+                    }
+                    
                     entryForm.style.display = 'none';
                     toggleFormBtn.textContent = 'Add New Entry';
                     entryForm.reset();
@@ -701,6 +812,18 @@
             e.preventDefault();
             
             try {
+                // If timer is still running, stop it
+                if (timerActive) {
+                    timerActive = false;
+                    clearInterval(timerInterval);
+                    const elapsedSeconds = Math.floor((Date.now() - timerStart) / 1000);
+                    urineVolumeInput.value = elapsedSeconds;
+                    timerBtn.textContent = 'Start';
+                    timerBtn.classList.remove('active');
+                    timerIndicator.classList.add('hidden');
+                    timerIndicator.classList.remove('pulse');
+                }
+                
                 // Get form values
                 const newEntry = {
                     date: document.getElementById('date').value,
