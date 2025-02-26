@@ -512,12 +512,17 @@
             }
         });
         
-        // Format date for display
+        // Format date for display - FIXED to handle timezone issues
         function formatDate(dateString) {
             try {
-                const date = new Date(dateString);
+                // Parse the date parts directly from the string to avoid timezone issues
+                const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
+                
+                // Month names for display
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                return `${months[date.getMonth()]} ${date.getDate()}`;
+                
+                // JavaScript months are 0-based, so subtract 1 from the month
+                return `${months[month-1]} ${day}`;
             } catch (error) {
                 console.error('Error formatting date', error);
                 return dateString;
@@ -562,9 +567,12 @@
                 
                 // Sort entries by date and time (newest first)
                 entries.sort(function(a, b) {
-                    const dateA = new Date(`${a.date}T${a.time}`);
-                    const dateB = new Date(`${b.date}T${b.time}`);
-                    return dateB - dateA;
+                    // Compare dates directly as strings (YYYY-MM-DD format sorts correctly)
+                    if (a.date !== b.date) {
+                        return a.date < b.date ? 1 : -1;
+                    }
+                    // If dates are the same, compare times
+                    return a.time < b.time ? 1 : -1;
                 });
                 
                 // Add each entry to the list
@@ -669,9 +677,12 @@
                     
                     // Sort by date and time (oldest first for export)
                     const sortedEntries = entries.slice().sort(function(a, b) {
-                        const dateA = new Date(`${a.date}T${a.time}`);
-                        const dateB = new Date(`${b.date}T${b.time}`);
-                        return dateA - dateB;
+                        // Compare dates directly as strings (YYYY-MM-DD format sorts correctly)
+                        if (a.date !== b.date) {
+                            return a.date > b.date ? 1 : -1;
+                        }
+                        // If dates are the same, compare times
+                        return a.time > b.time ? 1 : -1;
                     });
                     
                     sortedEntries.forEach(function(entry) {
