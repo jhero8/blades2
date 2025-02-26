@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Bladder Diary">
+    <title>Bladder Diary</title>
+    <style>
+        /* Basic reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f7f7f7;
+            color: #333;
+            line-height: 1.6;
+            padding: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* Header styles */
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .app-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f9cf9, #a651e6, #f9c74f);
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .app-logo-inner {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .app-logo-core {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f9cf9, #a651e6, #f9c74f);
+            opacity: 0.8;
+        }
+        
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* Button styles */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+        
+        .btn-primary {
+            background-color: #5a67d8;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #4c51bf;
+        }
+        
+        .btn-success {
+            background-color: #48bb78;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #38a169;
+        }
+        
+        .btn-danger {
+            background-color: #e53e3e;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: inline-block;
+            width: auto;
+            margin-bottom: 0;
+        }
+        
+        .btn-secondary {
+            background-color: #4299e1;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+            margin: 8px 0;
+            display: inline-block;
+        }
+        
+        /* Form styles */
+        .form {
+            background-color: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+        
+        .form.hidden {
+            display: none;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group.grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: #4a5568;
+        }
+        
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .form-control:focus {
+            border-color: #a0aec0;
+            outline: none;
+        }
+        
+        .form-check {
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-check-input {
+            margin-right: 8px;
+        }
+        
+        .section-header {
+            font-size: 16px;
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        /* Entries list */
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background-color: #f8fafc;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        
+        .card-body {
+            padding: 16px;
+        }
+        
+        .entry-item {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        
+        .entry-date {
+            font-weight: 500;
+            color: #2d3748;
+        }
+        
+        .entry-details {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 4px 8px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+        
+        .entry-label {
+            font-weight: 500;
+        }
+        
+        .no-entries {
+            text-align: center;
+            color: #a0aec0;
+            padding: 24px;
+        }
+        
+        /* Message styles */
+        .message {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+        
+        .message-danger {
+            background-color: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+        }
+        
+        .message-success {
+            background-color: #c6f6d5;
+            border: 1px solid #9ae6b4;
+            color: #2f855a;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Export section */
+        .export-section {
+            margin-top: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .export-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-family: monospace;
+            margin-bottom: 8px;
+            display: none;
+        }
+        
+        .helper-text {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 8px;
+        }
+        
+        /* Storage warning */
+        .storage-warning {
+            background-color: #feebc8;
+            border: 1px solid #f6ad55;
+            color: #c05621;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="app-logo">
+                <div class="app-logo-inner">
+                    <div class="app-logo-core"></div>
+                </div>
+            </div>
+            <h1>Bladder Diary</h1>
+            <p class="subtitle">Track your bladder health</p>
+        </header>
+        
+        <div id="storageWarning" class="storage-warning">
+            Storage is not working properly. Your entries won't be saved between sessions.
+        </div>
+        
+        <button id="toggleFormBtn" class="btn btn-primary">
+            Add New Entry
+        </button>
+        
+        <div id="messageArea" class="message hidden"></div>
+        
+        <form id="entryForm" class="form hidden">
+            <div class="form-group grid">
+                <div>
+                    <label class="form-label" for="date">Date</label>
+                    <input class="form-control" type="date" id="date" name="date" required>
+                </div>
+                <div>
+                    <label class="form-label" for="time">Time</label>
+                    <input class="form-control" type="time" id="time" name="time" required>
+                </div>
+            </div>
+            
+            <h3 class="section-header">Drink</h3>
+            <div class="form-group grid">
+                <div>
+                    <label class="form-label" for="drinkType">Type</label>
+                    <select class="form-control" id="drinkType" name="drinkType">
+                        <option value="">Select type</option>
+                        <option value="Water">Water</option>
+                        <option value="Coffee">Coffee</option>
+                        <option value="Tea">Tea</option>
+                        <option value="Juice">Juice</option>
+                        <option value="Soda">Soda</option>
+                        <option value="Alcohol">Alcohol</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="drinkAmount">Amount (ml)</label>
+                    <input class="form-control" type="number" id="drinkAmount" name="drinkAmount" placeholder="ml">
+                </div>
+            </div>
+            
+            <h3 class="section-header">Urine</h3>
+            <div class="form-group grid">
+                <div>
+                    <label class="form-label" for="urineVolume">Duration (seconds)</label>
+                    <input class="form-control" type="number" id="urineVolume" name="urineVolume" placeholder="seconds">
+                </div>
+                <div>
+                    <label class="form-label" for="urgency">Urgency (0-3)</label>
+                    <select class="form-control" id="urgency" name="urgency">
+                        <option value="">Select level</option>
+                        <option value="0">0 (None)</option>
+                        <option value="1">1 (Mild)</option>
+                        <option value="2">2 (Moderate)</option>
+                        <option value="3">3 (Severe)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <h3 class="section-header">Leakage</h3>
+            <div class="form-group grid">
+                <div>
+                    <label class="form-label" for="leakageUrgency">With Urgency</label>
+                    <select class="form-control" id="leakageUrgency" name="leakageUrgency">
+                        <option value="">Select level</option>
+                        <option value="None">None</option>
+                        <option value="Drops">Drops</option>
+                        <option value="Small">Small</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="Strong">Strong</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="leakageActivity">With Activities</label>
+                    <select class="form-control" id="leakageActivity" name="leakageActivity">
+                        <option value="">Select level</option>
+                        <option value="None">None</option>
+                        <option value="Drops">Drops</option>
+                        <option value="Small">Small</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="Strong">Strong</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="padChange" name="padChange">
+                    <label class="form-label" for="padChange">Pad Change</label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-success">Save Entry</button>
+        </form>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Recent Entries</h2>
+            </div>
+            <div id="entriesList" class="card-body">
+                <p id="noEntriesMsg" class="no-entries">No entries yet. Add your first one!</p>
+            </div>
+        </div>
+
+        <div class="export-section">
+            <button id="toggleExportBtn" class="btn btn-secondary">Show Export Data</button>
+            <textarea id="exportArea" class="export-textarea"></textarea>
+            <p class="helper-text">Select all text and copy to save</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const toggleFormBtn = document.getElementById('toggleFormBtn');
+        const entryForm = document.getElementById('entryForm');
+        const entriesList = document.getElementById('entriesList');
+        const noEntriesMsg = document.getElementById('noEntriesMsg');
+        const toggleExportBtn = document.getElementById('toggleExportBtn');
+        const exportArea = document.getElementById('exportArea');
+        const messageArea = document.getElementById('messageArea');
+        const storageWarning = document.getElementById('storageWarning');
+        
+        // Check if localStorage is available
+        let localStorageAvailable = false;
+        try {
+            localStorage.setItem("test", "test");
+            localStorage.removeItem("test");
+            localStorageAvailable = true;
+            storageWarning.style.display = 'none';
+        } catch (e) {
+            console.error("localStorage not available:", e);
+            storageWarning.style.display = 'block';
+            localStorageAvailable = false;
+        }
+        
+        // In-memory storage (backup if localStorage fails)
+        let entries = [];
+        
+        // Load entries from storage
+        function loadEntries() {
+            try {
+                if (localStorageAvailable) {
+                    const stored = localStorage.getItem('bladderDiaryEntries');
+                    if (stored) {
+                        entries = JSON.parse(stored);
+                    }
+                }
+                renderEntries();
+            } catch (e) {
+                console.error("Error loading entries:", e);
+                showMessage("Error loading saved entries", "danger");
+            }
+        }
+        
+        // Save entries to storage
+        function saveEntries() {
+            try {
+                if (localStorageAvailable) {
+                    localStorage.setItem('bladderDiaryEntries', JSON.stringify(entries));
+                }
+            } catch (e) {
+                console.error("Error saving entries:", e);
+                showMessage("Error saving entries", "danger");
+            }
+        }
+        
+        // Helper function to show a message
+        function showMessage(message, type = 'danger') {
+            messageArea.textContent = message;
+            messageArea.className = `message message-${type}`;
+            messageArea.style.display = 'block';
+            setTimeout(function() {
+                messageArea.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Set current date and time
+        function setCurrentDateTime() {
+            try {
+                const now = new Date();
+                const dateInput = document.getElementById('date');
+                const timeInput = document.getElementById('time');
+                
+                // Format date as YYYY-MM-DD
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                dateInput.value = `${year}-${month}-${day}`;
+                
+                // Format time as HH:MM
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                timeInput.value = `${hours}:${minutes}`;
+            } catch (error) {
+                console.error('Error setting date/time', error);
+            }
+        }
+        
+        // Toggle form visibility
+        toggleFormBtn.addEventListener('click', function() {
+            try {
+                if (entryForm.style.display === 'none' || entryForm.style.display === '') {
+                    entryForm.style.display = 'block';
+                    toggleFormBtn.textContent = 'Cancel';
+                    setCurrentDateTime();
+                } else {
+                    entryForm.style.display = 'none';
+                    toggleFormBtn.textContent = 'Add New Entry';
+                    entryForm.reset();
+                }
+            } catch (error) {
+                console.error('Error toggling form', error);
+                showMessage('Error showing form');
+            }
+        });
+        
+        // Format date for display
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return `${months[date.getMonth()]} ${date.getDate()}`;
+            } catch (error) {
+                console.error('Error formatting date', error);
+                return dateString;
+            }
+        }
+        
+        // Delete entry function
+        function deleteEntryAtIndex(index) {
+            try {
+                if (confirm('Are you sure you want to delete this entry?')) {
+                    entries.splice(index, 1);
+                    saveEntries();
+                    renderEntries();
+                    showMessage('Entry deleted', 'success');
+                }
+            } catch (error) {
+                console.error('Error deleting entry', error);
+                showMessage('Error deleting entry');
+            }
+        }
+        
+        // Make the delete function globally available
+        window.deleteEntryAtIndex = deleteEntryAtIndex;
+        
+        // Render entries list
+        function renderEntries() {
+            try {
+                // Clear all children except noEntriesMsg
+                while (entriesList.firstChild) {
+                    entriesList.removeChild(entriesList.firstChild);
+                }
+                
+                // Add the "no entries" message back
+                entriesList.appendChild(noEntriesMsg);
+                
+                if (entries.length === 0) {
+                    noEntriesMsg.style.display = 'block';
+                    return;
+                }
+                
+                noEntriesMsg.style.display = 'none';
+                
+                // Sort entries by date and time (newest first)
+                entries.sort(function(a, b) {
+                    const dateA = new Date(`${a.date}T${a.time}`);
+                    const dateB = new Date(`${b.date}T${b.time}`);
+                    return dateB - dateA;
+                });
+                
+                // Add each entry to the list
+                for (let i = 0; i < entries.length; i++) {
+                    const entry = entries[i];
+                    const entryEl = document.createElement('div');
+                    entryEl.className = 'entry-item';
+                    
+                    let entryHtml = `
+                        <div class="entry-header">
+                            <div class="entry-date">
+                                ${formatDate(entry.date)} at ${entry.time}
+                            </div>
+                            <button class="btn-danger" type="button" onclick="deleteEntryAtIndex(${i})">
+                                Delete
+                            </button>
+                        </div>
+                        <div class="entry-details">
+                    `;
+                    
+                    if (entry.drinkType) {
+                        entryHtml += `
+                            <div class="entry-label">Drink:</div>
+                            <div>${entry.drinkType} (${entry.drinkAmount || 0} ml)</div>
+                        `;
+                    }
+                    
+                    if (entry.urineVolume) {
+                        entryHtml += `
+                            <div class="entry-label">Urine:</div>
+                            <div>${entry.urineVolume} seconds (Urgency: ${entry.urgency || 'N/A'})</div>
+                        `;
+                    }
+                    
+                    if (entry.leakageUrgency || entry.leakageActivity) {
+                        entryHtml += `
+                            <div class="entry-label">Leakage:</div>
+                            <div>
+                                ${entry.leakageUrgency ? `Urgency: ${entry.leakageUrgency}` : ''}
+                                ${entry.leakageUrgency && entry.leakageActivity ? ', ' : ''}
+                                ${entry.leakageActivity ? `Activity: ${entry.leakageActivity}` : ''}
+                            </div>
+                        `;
+                    }
+                    
+                    if (entry.padChange) {
+                        entryHtml += `
+                            <div class="entry-label">Pad:</div>
+                            <div>Changed</div>
+                        `;
+                    }
+                    
+                    entryHtml += `</div>`;
+                    entryEl.innerHTML = entryHtml;
+                    entriesList.appendChild(entryEl);
+                }
+            } catch (error) {
+                console.error('Error rendering entries', error);
+                showMessage('Error displaying entries');
+            }
+        }
+        
+        // Handle form submission
+        entryForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            try {
+                // Get form values
+                const newEntry = {
+                    date: document.getElementById('date').value,
+                    time: document.getElementById('time').value,
+                    drinkType: document.getElementById('drinkType').value,
+                    drinkAmount: document.getElementById('drinkAmount').value,
+                    urineVolume: document.getElementById('urineVolume').value,
+                    urgency: document.getElementById('urgency').value,
+                    leakageUrgency: document.getElementById('leakageUrgency').value,
+                    leakageActivity: document.getElementById('leakageActivity').value,
+                    padChange: document.getElementById('padChange').checked
+                };
+                
+                // Add new entry
+                entries.push(newEntry);
+                
+                // Save to storage
+                saveEntries();
+                
+                // Render entries
+                renderEntries();
+                
+                // Reset form and hide
+                entryForm.reset();
+                entryForm.style.display = 'none';
+                toggleFormBtn.textContent = 'Add New Entry';
+                
+                // Show success message
+                showMessage('Entry saved successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error saving entry', error);
+                showMessage('Error saving entry');
+            }
+        });
+        
+        // Toggle export data
+        toggleExportBtn.addEventListener('click', function() {
+            try {
+                if (entries.length === 0) {
+                    showMessage('No entries to export');
+                    return;
+                }
+                
+                if (exportArea.style.display === 'none' || exportArea.style.display === '') {
+                    // Create a clean text representation
+                    let textData = "BLADDER DIARY ENTRIES\n\n";
+                    
+                    // Sort by date and time (oldest first for export)
+                    const sortedEntries = entries.slice().sort(function(a, b) {
+                        const dateA = new Date(`${a.date}T${a.time}`);
+                        const dateB = new Date(`${b.date}T${b.time}`);
+                        return dateA - dateB;
+                    });
+                    
+                    sortedEntries.forEach(function(entry) {
+                        textData += `Date: ${entry.date} Time: ${entry.time}\n`;
+                        
+                        if (entry.drinkType) {
+                            textData += `Drink: ${entry.drinkType} (${entry.drinkAmount || 0} ml)\n`;
+                        }
+                        
+                        if (entry.urineVolume) {
+                            textData += `Urine: ${entry.urineVolume} seconds (Urgency: ${entry.urgency || 'N/A'})\n`;
+                        }
+                        
+                        let leakageInfo = '';
+                        if (entry.leakageUrgency) {
+                            leakageInfo += `Urgency: ${entry.leakageUrgency}`;
+                        }
+                        if (entry.leakageActivity) {
+                            if (leakageInfo) leakageInfo += ', ';
+                            leakageInfo += `Activity: ${entry.leakageActivity}`;
+                        }
+                        if (leakageInfo) {
+                            textData += `Leakage: ${leakageInfo}\n`;
+                        }
+                        
+                        if (entry.padChange) {
+                            textData += `Pad: Changed\n`;
+                        }
+                        
+                        textData += `\n`;
+                    });
+                    
+                    // Show in textarea
+                    exportArea.value = textData;
+                    exportArea.style.display = 'block';
+                    exportArea.select();
+                    toggleExportBtn.textContent = 'Hide Export Data';
+                    showMessage('Select all text and copy to save', 'success');
+                } else {
+                    exportArea.style.display = 'none';
+                    toggleExportBtn.textContent = 'Show Export Data';
+                }
+                
+            } catch (error) {
+                console.error('Error exporting data', error);
+                showMessage('Error creating export');
+            }
+        });
+        
+        // Initialize app
+        entryForm.style.display = 'none';
+        exportArea.style.display = 'none';
+        setCurrentDateTime();
+        loadEntries(); // Load any previously saved entries
+    </script>
+</body>
+</html>
