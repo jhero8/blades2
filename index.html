@@ -419,6 +419,7 @@
         
         /* Chart containers */
         .chart-container {
+            overflow-x: auto;
             margin-bottom: 32px;
             background-color: #fcfcfc;
             border-radius: 6px;
@@ -439,6 +440,11 @@
             width: 100%;
             position: relative;
         }
+
+        /* Specific height for the stream chart container */
+#streamChart {
+    height: 350px;
+}
         
         /* IMPROVED: Bar chart styling */
         .bar-chart {
@@ -662,7 +668,7 @@
 
         /* IMPROVED: Canvas-based charts */
         .canvas-container {
-            height: 180px;
+            height: 100%;
             width: 100%;
             position: relative;
         }
@@ -1743,146 +1749,241 @@
         }
 
         function renderStreamChart() {
-            try {
-                const canvas = document.getElementById('streamCanvas');
-                if (!canvas) return;
-                
-                setCanvasDimensions(canvas);
-                clearCanvas(canvas);
-                
-                // Count stream types
-                const streamCounts = { 'Strong': 0, 'Intermittent': 0, 'Weak': 0 };
-                let hasStreamData = false;
-                
-                entries.forEach(entry => {
-                    if (entry.urineStream && streamCounts.hasOwnProperty(entry.urineStream)) {
-                        hasStreamData = true;
-                        streamCounts[entry.urineStream]++;
-                    }
-                });
-                
-                if (!hasStreamData) {
-                    drawEmptyState(canvas, 'No stream data recorded yet');
-                    return;
+    try {
+        const canvas = document.getElementById('streamCanvas');
+        if (!canvas) return;
+
+        // Use the same dynamic sizing approach as other charts:
+        setCanvasDimensions(canvas);
+        clearCanvas(canvas);
+
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Get all entries with urine stream data
+        const streamEntries = entries.filter(entry => entry.urineStream);
+        if (streamEntries.length === 0) {
+            drawEmptyState(canvas, 'No stream data recorded yet');
+            return;
+        }
+
+        // Sort entries by date/time
+        streamEntries.sort((a, b) => {
+            if (a.date !== b.date) {
+                return a.date.localeCompare(b.date);
+            }
+            return a.time.localeCompare(b.time);
+        });
+
+        // Convert stream types to numeric values
+        const streamValues = {
+            'Strong': 3,
+            'Intermittent': 2,
+            'Weak': 1
+        };
+
+        // Prepare data points
+        const dataPoints = streamEntries.map(entry => {
+            const value = streamValues[entry.urineStream];
+            if (!value) console.error(`Invalid urineStream value: ${entry.urineStream}`);
+            return {
+                date: entry.date,
+                time: entry.time,
+                displayDate: formatDate(entry.date),
+                value: value || 1, // Default to Weak if invalid
+                label: entry.urineStream
+            };
+        });
+
+        // Fill canvas background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+
+        // Layout zones (currently sized for roughly 400x400, but will scale better now)
+        const layout = {
+            title: { top: 20, height: 30 },
+            goal: { top: 60, height: 20 },
+            chart: {
+                top: 100,
+                bottom: 250,
+                left: 100,
+                right: 350
+            },
+            trend: { top: 280, height: 30 },
+            legend: { top: 330, height: 20 }
+        };
+
+        // Draw title
+        ctx.fillStyle = '#4a5568';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Urine Stream Strength Over Time', width / 2, layout.title.top + layout.title.height / 2);
+
+        // Draw goal
+        ctx.fillStyle = '#4a5568';
+        ctx.font = 'italic 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(
+            'Goal: Strong urine stream indicates better bladder health',
+            width / 2,
+            layout.goal.top + layout.goal.height / 2
+        );
+
+        // Define y-axis levels (Strong = 3, Intermittent = 2, Weak = 1)
+        const streamLevels = [
+            { value: 3, label: 'Strong', color: '#22c55e' },
+            { value: 2, label: 'Intermittent', color: '#eab308' },
+            { value: 1, label: 'Weak', color: '#dc2626' }
+        ];
+
+        const chartHeight = layout.chart.bottom - layout.chart.top;
+        const levelHeight = chartHeight / 2; // distance between each of the three levels
+
+        // Draw horizontal lines & labels
+        streamLevels.forEach((level) => {
+    const yPos = layout.chart.top + (3 - level.value) * levelHeight;
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(layout.chart.left, yPos);
+    ctx.lineTo(layout.chart.right, yPos);
+    ctx.stroke();
+
+    ctx.fillStyle = level.color;
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(level.label, layout.chart.left - 10, yPos);
+});
+
+        // Draw the data line
+        const chartWidth = layout.chart.right - layout.chart.left;
+        if (dataPoints.length > 0) {
+            const dateStep = chartWidth / (dataPoints.length > 1 ? dataPoints.length - 1 : 1);
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#4f9cf9';
+            ctx.lineWidth = 2;
+
+            dataPoints.forEach((point, index) => {
+                const x = layout.chart.left + index * dateStep;
+                const y = layout.chart.top + (3 - point.value) * levelHeight;
+
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
                 }
-                
-                // Calculate total
-                const total = Object.values(streamCounts).reduce((sum, count) => sum + count, 0);
-                if (total === 0) {
-                    drawEmptyState(canvas, 'No stream data recorded yet');
-                    return;
-                }
-                
-                const ctx = canvas.getContext('2d');
-                const width = canvas.width;
-                const height = canvas.height;
-                const padding = { top: 20, right: 20, bottom: 60, left: 20 }; // Increased bottom padding
-                
-                const chartWidth = width - padding.left - padding.right;
-                const chartHeight = height - padding.top - padding.bottom;
-                
-                // Draw background
-                ctx.fillStyle = '#f8f9fa';
-                ctx.fillRect(0, 0, width, height);
-                
-                // Colors for stream types - enhanced Strong color
-                const colors = {
-                    'Strong': '#22c55e', // Brighter green to emphasize as goal
-                    'Intermittent': '#eab308', // Amber
-                    'Weak': '#dc2626'  // Red
-                };
-                
-                // Add goal note at the top
-                ctx.fillStyle = '#4a5568';
-                ctx.font = 'italic 11px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'top';
-                ctx.fillText('Goal: Strong urine stream indicates better bladder health', width / 2, 5);
-                
-                // Ensure Strong shows first, followed by Intermittent, then Weak
-                const orderedStreamTypes = ['Strong', 'Intermittent', 'Weak'].filter(type => streamCounts[type] > 0);
-                
-                // Draw bar chart
-                const barWidth = chartWidth / orderedStreamTypes.length * 0.7;
-                const barSpacing = chartWidth / orderedStreamTypes.length;
-                
-                orderedStreamTypes.forEach((type, index) => {
-                    const count = streamCounts[type];
-                    const percent = (count / total) * 100;
-                    const barHeight = (percent / 100) * chartHeight;
-                    const x = padding.left + index * barSpacing + (barSpacing - barWidth) / 2;
-                    const y = padding.top + chartHeight - barHeight;
-                    
-                    // Draw bar with highlight for Strong
-                    ctx.fillStyle = colors[type];
-                    
-                    // Add glow effect to Strong
-                    if (type === 'Strong') {
-                        ctx.shadowColor = '#22c55e';
-                        ctx.shadowBlur = 5;
-                    }
-                    
-                    ctx.beginPath();
-                    ctx.roundRect(x, y, barWidth, barHeight, [4, 4, 0, 0]);
-                    ctx.fill();
-                    
-                    // Reset shadow
-                    ctx.shadowBlur = 0;
-                    
-                    // Draw percentage
-                    ctx.fillStyle = type === 'Strong' ? '#166534' : '#4a5568';
-                    ctx.font = type === 'Strong' ? 'bold 11px sans-serif' : '10px sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
-                    ctx.fillText(`${Math.round(percent)}%`, x + barWidth / 2, y - 5);
-                    
-                    // Draw stream type label
-                    ctx.fillStyle = type === 'Strong' ? '#166534' : '#4a5568';
-                    ctx.font = type === 'Strong' ? 'bold 12px sans-serif' : '12px sans-serif';
+
+                // Draw date labels (spacing them out if there are many)
+                if (dataPoints.length <= 5 || index % Math.ceil(dataPoints.length / 5) === 0) {
+                    ctx.fillStyle = '#718096';
+                    ctx.font = '12px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'top';
-                    ctx.fillText(type, x + barWidth / 2, height - padding.bottom + 5);
-                });
-                
-                // Try to find trends - only if enough entries
-                const recentEntries = entries
-                    .filter(e => e.urineStream)
-                    .sort((a, b) => a.date + a.time < b.date + b.time ? 1 : -1);
-                    
-                if (recentEntries.length >= 5) {
-                    const lastFive = recentEntries.slice(0, 5);
-                    const strongCount = lastFive.filter(e => e.urineStream === 'Strong').length;
-                    const weakCount = lastFive.filter(e => e.urineStream === 'Weak').length;
-                    
-                    // Draw trend indicator with increased spacing
-                    ctx.font = '14px sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    
-                    let trendText = '';
-                    
-                    if (strongCount >= 3) {
-                        ctx.fillStyle = '#22c55e';
-                        trendText = '👍 Improving trend';
-                    } else if (weakCount >= 3) {
-                        ctx.fillStyle = '#dc2626';
-                        trendText = '👎 Worsening trend';
-                    } else {
-                        ctx.fillStyle = '#eab308';
-                        trendText = '➡️ Stable trend';
-                    }
-                    
-                    // Position the trend text higher up for more spacing
-                    ctx.fillText(trendText, width / 2, height - 30);
+                    ctx.fillText(point.displayDate, x, layout.chart.bottom + 10);
                 }
-            } catch (error) {
-                console.error('Error rendering stream chart', error);
-                const canvas = document.getElementById('streamCanvas');
-                if (canvas) {
-                    drawEmptyState(canvas, 'Could not generate chart');
+            });
+            ctx.stroke();
+
+            // Draw point circles
+            dataPoints.forEach((point, index) => {
+                const x = layout.chart.left + index * dateStep;
+                const y = layout.chart.top + (3 - point.value) * levelHeight;
+
+                let pointColor;
+                switch (point.value) {
+                    case 3: pointColor = '#22c55e'; break;
+                    case 2: pointColor = '#eab308'; break;
+                    case 1: pointColor = '#dc2626'; break;
+                    default: pointColor = '#4f9cf9';
                 }
+
+                ctx.beginPath();
+                ctx.fillStyle = pointColor;
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // White outline
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+
+            // Simple trend calculation
+            if (dataPoints.length >= 3) {
+                const firstThree = dataPoints.slice(0, 3);
+                const lastThree = dataPoints.slice(-3);
+
+                const firstAvg = firstThree.reduce((sum, p) => sum + p.value, 0) / firstThree.length;
+                const lastAvg = lastThree.reduce((sum, p) => sum + p.value, 0) / lastThree.length;
+
+                let trendDirection, trendColor, trendEmoji;
+                if (lastAvg > firstAvg + 0.3) {
+                    trendDirection = 'Improving';
+                    trendColor = '#22c55e';
+                    trendEmoji = '👍';
+                } else if (lastAvg < firstAvg - 0.3) {
+                    trendDirection = 'Worsening';
+                    trendColor = '#dc2626';
+                    trendEmoji = '👎';
+                } else {
+                    trendDirection = 'Stable';
+                    trendColor = '#eab308';
+                    trendEmoji = '➡️';
+                }
+
+                // Dotted trend line
+                ctx.beginPath();
+                ctx.strokeStyle = trendColor;
+                ctx.setLineDash([5, 3]);
+                ctx.lineWidth = 2;
+
+                const firstX = layout.chart.left;
+                const firstY = layout.chart.top + (3 - firstAvg) * levelHeight;
+                const lastX = layout.chart.right;
+                const lastY = layout.chart.top + (3 - lastAvg) * levelHeight;
+
+                ctx.moveTo(firstX, firstY);
+                ctx.lineTo(lastX, lastY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Trend text
+                ctx.fillStyle = trendColor;
+                ctx.font = 'bold 16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(
+                    `${trendEmoji} ${trendDirection} trend`,
+                    width / 2,
+                    layout.trend.top + layout.trend.height / 2
+                );
+
+                // Legend text
+                ctx.fillStyle = '#4a5568';
+                ctx.font = '14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(
+                    'Dotted line shows overall trend',
+                    width / 2,
+                    layout.legend.top + layout.legend.height / 2
+                );
             }
         }
+    } catch (error) {
+        console.error('Error rendering stream chart', error);
+        const canvas = document.getElementById('streamCanvas');
+        if (canvas) {
+            drawEmptyState(canvas, 'Could not generate chart');
+        }
+    }
+}
+
         
         // Pull-to-refresh functionality
         function startRefreshing() {
