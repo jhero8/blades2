@@ -1776,7 +1776,7 @@
                 const ctx = canvas.getContext('2d');
                 const width = canvas.width;
                 const height = canvas.height;
-                const padding = { top: 20, right: 20, bottom: 40, left: 20 };
+                const padding = { top: 20, right: 20, bottom: 60, left: 20 }; // Increased bottom padding
                 
                 const chartWidth = width - padding.left - padding.right;
                 const chartHeight = height - padding.top - padding.bottom;
@@ -1785,43 +1785,60 @@
                 ctx.fillStyle = '#f8f9fa';
                 ctx.fillRect(0, 0, width, height);
                 
-                // Colors for stream types
+                // Colors for stream types - enhanced Strong color
                 const colors = {
-                    'Strong': '#48bb78',
-                    'Intermittent': '#ecc94b',
-                    'Weak': '#e53e3e'
+                    'Strong': '#22c55e', // Brighter green to emphasize as goal
+                    'Intermittent': '#eab308', // Amber
+                    'Weak': '#dc2626'  // Red
                 };
                 
-                // Filter out zero counts
-                const streamTypes = Object.keys(streamCounts).filter(type => streamCounts[type] > 0);
+                // Add goal note at the top
+                ctx.fillStyle = '#4a5568';
+                ctx.font = 'italic 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText('Goal: Strong urine stream indicates better bladder health', width / 2, 5);
+                
+                // Ensure Strong shows first, followed by Intermittent, then Weak
+                const orderedStreamTypes = ['Strong', 'Intermittent', 'Weak'].filter(type => streamCounts[type] > 0);
                 
                 // Draw bar chart
-                const barWidth = chartWidth / streamTypes.length * 0.7;
-                const barSpacing = chartWidth / streamTypes.length;
+                const barWidth = chartWidth / orderedStreamTypes.length * 0.7;
+                const barSpacing = chartWidth / orderedStreamTypes.length;
                 
-                streamTypes.forEach((type, index) => {
+                orderedStreamTypes.forEach((type, index) => {
                     const count = streamCounts[type];
                     const percent = (count / total) * 100;
                     const barHeight = (percent / 100) * chartHeight;
                     const x = padding.left + index * barSpacing + (barSpacing - barWidth) / 2;
                     const y = padding.top + chartHeight - barHeight;
                     
-                    // Draw bar
+                    // Draw bar with highlight for Strong
                     ctx.fillStyle = colors[type];
+                    
+                    // Add glow effect to Strong
+                    if (type === 'Strong') {
+                        ctx.shadowColor = '#22c55e';
+                        ctx.shadowBlur = 5;
+                    }
+                    
                     ctx.beginPath();
                     ctx.roundRect(x, y, barWidth, barHeight, [4, 4, 0, 0]);
                     ctx.fill();
                     
+                    // Reset shadow
+                    ctx.shadowBlur = 0;
+                    
                     // Draw percentage
-                    ctx.fillStyle = '#4a5568';
-                    ctx.font = '10px sans-serif';
+                    ctx.fillStyle = type === 'Strong' ? '#166534' : '#4a5568';
+                    ctx.font = type === 'Strong' ? 'bold 11px sans-serif' : '10px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'bottom';
                     ctx.fillText(`${Math.round(percent)}%`, x + barWidth / 2, y - 5);
                     
                     // Draw stream type label
-                    ctx.fillStyle = '#4a5568';
-                    ctx.font = '12px sans-serif';
+                    ctx.fillStyle = type === 'Strong' ? '#166534' : '#4a5568';
+                    ctx.font = type === 'Strong' ? 'bold 12px sans-serif' : '12px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'top';
                     ctx.fillText(type, x + barWidth / 2, height - padding.bottom + 5);
@@ -1837,7 +1854,7 @@
                     const strongCount = lastFive.filter(e => e.urineStream === 'Strong').length;
                     const weakCount = lastFive.filter(e => e.urineStream === 'Weak').length;
                     
-                    // Draw trend indicator
+                    // Draw trend indicator with increased spacing
                     ctx.font = '14px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
@@ -1845,17 +1862,18 @@
                     let trendText = '';
                     
                     if (strongCount >= 3) {
-                        ctx.fillStyle = '#48bb78';
+                        ctx.fillStyle = '#22c55e';
                         trendText = '👍 Improving trend';
                     } else if (weakCount >= 3) {
-                        ctx.fillStyle = '#e53e3e';
+                        ctx.fillStyle = '#dc2626';
                         trendText = '👎 Worsening trend';
                     } else {
-                        ctx.fillStyle = '#ecc94b';
+                        ctx.fillStyle = '#eab308';
                         trendText = '➡️ Stable trend';
                     }
                     
-                    ctx.fillText(trendText, width / 2, height - 10);
+                    // Position the trend text higher up for more spacing
+                    ctx.fillText(trendText, width / 2, height - 30);
                 }
             } catch (error) {
                 console.error('Error rendering stream chart', error);
