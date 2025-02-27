@@ -672,6 +672,13 @@
             width: 100%;
             position: relative;
         }
+
+        .helper-text {
+    font-size: 12px;
+    color: #718096;
+    margin-top: 8px;
+    display: none; /* Hidden by default */
+}
     </style>
 </head>
 <body>
@@ -1175,16 +1182,32 @@ function saveEntries() {
         }
 
         // Add this to the export section to enable downloading a JSON backup file
-function addBackupDownloadButton() {
+        function addBackupButtons() {
     const exportSection = document.querySelector('.export-section');
     
-    // Create download backup button
-    const downloadButton = document.createElement('button');
-    downloadButton.className = 'btn btn-secondary';
-    downloadButton.textContent = 'Download JSON Backup';
-    downloadButton.style.marginLeft = '8px';
+    // Create button container with better spacing
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.gap = '8px';
+    buttonContainer.style.marginBottom = '16px';
+    buttonContainer.style.marginTop = '8px';
     
-    // Add click handler
+    // Create download backup button with muted styling
+    const downloadButton = document.createElement('button');
+    downloadButton.className = 'btn-secondary';
+    downloadButton.textContent = 'Download JSON Backup';
+    
+    // Apply muted styling
+    downloadButton.style.backgroundColor = '#a0aec0'; // Grey color
+    downloadButton.style.flex = '1'; // Take equal space
+    downloadButton.style.padding = '8px 16px';
+    downloadButton.style.fontSize = '14px';
+    downloadButton.style.color = 'white';
+    downloadButton.style.borderRadius = '4px';
+    downloadButton.style.border = 'none';
+    downloadButton.style.cursor = 'pointer';
+    
+    // Add click handler for download
     downloadButton.addEventListener('click', function() {
         try {
             if (entries.length === 0) {
@@ -1219,8 +1242,98 @@ function addBackupDownloadButton() {
         }
     });
     
-    // Add button to page
-    exportSection.insertBefore(downloadButton, exportArea);
+    // Create import backup button with matching muted styling
+    const importButton = document.createElement('button');
+    importButton.className = 'btn-secondary';
+    importButton.textContent = 'Import JSON Backup';
+    
+    // Apply matching muted styling
+    importButton.style.backgroundColor = '#a0aec0'; // Same grey color
+    importButton.style.flex = '1'; // Take equal space
+    importButton.style.padding = '8px 16px';
+    importButton.style.fontSize = '14px';
+    importButton.style.color = 'white';
+    importButton.style.borderRadius = '4px';
+    importButton.style.border = 'none';
+    importButton.style.cursor = 'pointer';
+    
+    // Create hidden file input for import
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.style.display = 'none';
+    
+    // Add click handler for import button
+    importButton.addEventListener('click', function() {
+        fileInput.click();
+    });
+    
+    // Add change handler for file selection
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length === 0) return;
+        
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                
+                if (Array.isArray(importedData) && importedData.length > 0) {
+                    // Check if the data has the expected structure
+                    const isValid = importedData.every(entry => 
+                        typeof entry === 'object' && 
+                        (entry.date || entry.time || entry.drinkType || entry.urineVolume)
+                    );
+                    
+                    if (isValid) {
+                        if (confirm(`Import ${importedData.length} entries? This will replace your current data.`)) {
+                            entries = importedData;
+                            saveEntries();
+                            renderEntries();
+                            showMessage(`Successfully imported ${importedData.length} entries!`, 'success');
+                        }
+                    } else {
+                        showMessage('Invalid backup file format', 'danger');
+                    }
+                } else {
+                    showMessage('No valid entries found in the backup file', 'danger');
+                }
+            } catch (error) {
+                console.error('Error importing backup:', error);
+                showMessage('Error importing backup: Invalid JSON format', 'danger');
+            }
+            
+            // Reset the file input
+            fileInput.value = '';
+        };
+        
+        reader.readAsText(file);
+    });
+    
+    // Add hover effects
+    downloadButton.addEventListener('mouseover', function() {
+        this.style.backgroundColor = '#718096'; // Darker grey on hover
+    });
+    downloadButton.addEventListener('mouseout', function() {
+        this.style.backgroundColor = '#a0aec0'; // Back to normal grey
+    });
+    
+    importButton.addEventListener('mouseover', function() {
+        this.style.backgroundColor = '#718096'; // Darker grey on hover
+    });
+    importButton.addEventListener('mouseout', function() {
+        this.style.backgroundColor = '#a0aec0'; // Back to normal grey
+    });
+    
+    // Add elements to the container
+    buttonContainer.appendChild(downloadButton);
+    buttonContainer.appendChild(importButton);
+    document.body.appendChild(fileInput);
+    
+    // Add the container to the export section
+    const toggleExportBtn = document.getElementById('toggleExportBtn');
+    exportSection.insertBefore(buttonContainer, toggleExportBtn.nextSibling);
 }
 
 
@@ -1277,67 +1390,80 @@ function addBackupDownloadButton() {
         });
         
         // Toggle export data
-        toggleExportBtn.addEventListener('click', function() {
-            try {
-                if (entries.length === 0) {
-                    showMessage('No entries to export');
-                    return;
+toggleExportBtn.addEventListener('click', function() {
+    try {
+        if (entries.length === 0) {
+            showMessage('No entries to export');
+            return;
+        }
+        
+        const helperText = document.querySelector('.helper-text');
+        
+        if (exportArea.style.display === 'none' || exportArea.style.display === '') {
+            // Create a clean text representation
+            let textData = "BLADDER DIARY ENTRIES\n\n";
+            
+            // Sort by date and time (oldest first for export)
+            const sortedEntries = entries.slice().sort(function(a, b) {
+                // Compare dates directly as strings (YYYY-MM-DD format sorts correctly)
+                if (a.date !== b.date) {
+                    return a.date > b.date ? 1 : -1;
+                }
+                // If dates are the same, compare times
+                return a.time > b.time ? 1 : -1;
+            });
+            
+            sortedEntries.forEach(function(entry) {
+                textData += `Date: ${entry.date} Time: ${entry.time}\n`;
+                
+                if (entry.drinkType) {
+                    textData += `Drink: ${entry.drinkType} (${entry.drinkAmount || 0} ml)\n`;
                 }
                 
-                if (exportArea.style.display === 'none' || exportArea.style.display === '') {
-                    // Create a clean text representation
-                    let textData = "BLADDER DIARY ENTRIES\n\n";
-                    
-                    // Sort by date and time (oldest first for export)
-                    const sortedEntries = entries.slice().sort(function(a, b) {
-                        // Compare dates directly as strings (YYYY-MM-DD format sorts correctly)
-                        if (a.date !== b.date) {
-                            return a.date > b.date ? 1 : -1;
-                        }
-                        // If dates are the same, compare times
-                        return a.time > b.time ? 1 : -1;
-                    });
-                    
-                    sortedEntries.forEach(function(entry) {
-                        textData += `Date: ${entry.date} Time: ${entry.time}\n`;
-                        
-                        if (entry.drinkType) {
-                            textData += `Drink: ${entry.drinkType} (${entry.drinkAmount || 0} ml)\n`;
-                        }
-                        
-                        if (entry.urineVolume) {
-                            textData += `Urine: ${entry.urineVolume} seconds (Urgency: ${entry.urgency || 'N/A'})\n`;
-                        }
-                        
-                        if (entry.urineStream) {
-                            textData += `Urine Flow: Stream: ${entry.urineStream}\n`;
-                        }
-                        
-                        textData += `\n`;
-                    });
-                    
-                    // Show in textarea and auto-select
-                    exportArea.value = textData;
-                    exportArea.style.display = 'block';
-                    
-                    // IMPROVED: Use setTimeout to ensure selection happens after display
-                    setTimeout(() => {
-                        exportArea.focus();
-                        exportArea.select();
-                    }, 100);
-                    
-                    toggleExportBtn.textContent = 'Hide Export Data';
-                    showMessage('Text is selected and ready to copy', 'success');
-                } else {
-                    exportArea.style.display = 'none';
-                    toggleExportBtn.textContent = 'Show Export Data';
+                if (entry.urineVolume) {
+                    textData += `Urine: ${entry.urineVolume} seconds (Urgency: ${entry.urgency || 'N/A'})\n`;
                 }
                 
-            } catch (error) {
-                console.error('Error exporting data', error);
-                showMessage('Error creating export');
+                if (entry.urineStream) {
+                    textData += `Urine Flow: Stream: ${entry.urineStream}\n`;
+                }
+                
+                textData += `\n`;
+            });
+            
+            // Show in textarea and auto-select
+            exportArea.value = textData;
+            exportArea.style.display = 'block';
+            
+            // Show helper text
+            if (helperText) {
+                helperText.style.display = 'block';
             }
-        });
+            
+            // IMPROVED: Use setTimeout to ensure selection happens after display
+            setTimeout(() => {
+                exportArea.focus();
+                exportArea.select();
+            }, 100);
+            
+            toggleExportBtn.textContent = 'Hide Export Data';
+            showMessage('Text is selected and ready to copy', 'success');
+        } else {
+            exportArea.style.display = 'none';
+            
+            // Hide helper text
+            if (helperText) {
+                helperText.style.display = 'none';
+            }
+            
+            toggleExportBtn.textContent = 'Show Export Data';
+        }
+        
+    } catch (error) {
+        console.error('Error exporting data', error);
+        showMessage('Error creating export');
+    }
+});
         
         // Dashboard toggle functionality
         toggleDashboardBtn.addEventListener('click', function() {
@@ -2156,7 +2282,7 @@ if (entries.length === 0) {
 }
 
 // Call this function during initialization
-addBackupDownloadButton();
+addBackupButtons();
 
 // Modify the loadSampleData function to not call saveEntries automatically:
 function loadSampleData() {
