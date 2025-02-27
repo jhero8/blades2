@@ -932,33 +932,70 @@
             }
         });
         
-        // Load entries from storage
-        function loadEntries() {
-            try {
-                if (localStorageAvailable) {
-                    const stored = localStorage.getItem('bladderDiaryEntries');
-                    if (stored) {
-                        entries = JSON.parse(stored);
+// Enhanced loading with backup recovery
+function loadEntries() {
+    try {
+        if (localStorageAvailable) {
+            let loadedEntries = null;
+            
+            // Try to load from primary storage
+            const stored = localStorage.getItem('bladderDiaryEntries');
+            if (stored) {
+                try {
+                    loadedEntries = JSON.parse(stored);
+                    console.log("Loaded entries from primary storage:", loadedEntries.length);
+                } catch (parseError) {
+                    console.error("Error parsing primary storage:", parseError);
+                }
+            }
+            
+            // If primary storage failed, try backup
+            if (!loadedEntries || loadedEntries.length === 0) {
+                const backup = localStorage.getItem('bladderDiaryEntries_backup');
+                if (backup) {
+                    try {
+                        const backupEntries = JSON.parse(backup);
+                        if (backupEntries && backupEntries.length > 0) {
+                            loadedEntries = backupEntries;
+                            console.log("Recovered entries from backup storage:", loadedEntries.length);
+                            showMessage("Data recovered from backup", "success");
+                        }
+                    } catch (parseError) {
+                        console.error("Error parsing backup storage:", parseError);
                     }
                 }
-                renderEntries();
-            } catch (e) {
-                console.error("Error loading entries:", e);
-                showMessage("Error loading saved entries", "danger");
+            }
+            
+            // Update entries if we loaded something
+            if (loadedEntries && loadedEntries.length > 0) {
+                entries = loadedEntries;
             }
         }
+        renderEntries();
+    } catch (e) {
+        console.error("Error loading entries:", e);
+        showMessage("Error loading saved entries", "danger");
+    }
+}
         
-        // Save entries to storage
-        function saveEntries() {
-            try {
-                if (localStorageAvailable) {
-                    localStorage.setItem('bladderDiaryEntries', JSON.stringify(entries));
-                }
-            } catch (e) {
-                console.error("Error saving entries:", e);
-                showMessage("Error saving entries", "danger");
-            }
+// Create a backup when saving entries
+function saveEntries() {
+    try {
+        if (localStorageAvailable) {
+            // Save to primary storage
+            localStorage.setItem('bladderDiaryEntries', JSON.stringify(entries));
+            
+            // Create backup every time we save
+            localStorage.setItem('bladderDiaryEntries_backup', JSON.stringify(entries));
+            
+            // Save a timestamp of the last save
+            localStorage.setItem('bladderDiaryLastSave', new Date().toISOString());
         }
+    } catch (e) {
+        console.error("Error saving entries:", e);
+        showMessage("Error saving entries", "danger");
+    }
+}
         
         // Helper function to show a message
         function showMessage(message, type = 'danger') {
@@ -1136,6 +1173,57 @@
                 showMessage('Error displaying entries');
             }
         }
+
+        // Add this to the export section to enable downloading a JSON backup file
+function addBackupDownloadButton() {
+    const exportSection = document.querySelector('.export-section');
+    
+    // Create download backup button
+    const downloadButton = document.createElement('button');
+    downloadButton.className = 'btn btn-secondary';
+    downloadButton.textContent = 'Download JSON Backup';
+    downloadButton.style.marginLeft = '8px';
+    
+    // Add click handler
+    downloadButton.addEventListener('click', function() {
+        try {
+            if (entries.length === 0) {
+                showMessage('No entries to export');
+                return;
+            }
+            
+            // Create JSON data
+            const jsonData = JSON.stringify(entries, null, 2);
+            
+            // Create blob and download link
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            // Create and trigger download
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'bladder_diary_backup.json';
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            setTimeout(function() {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 0);
+            
+            showMessage('Backup downloaded successfully!', 'success');
+        } catch (error) {
+            console.error('Error creating backup:', error);
+            showMessage('Error creating backup');
+        }
+    });
+    
+    // Add button to page
+    exportSection.insertBefore(downloadButton, exportArea);
+}
+
+
         
         // Handle form submission
         entryForm.addEventListener('submit', function(e) {
@@ -2054,11 +2142,47 @@
         });
         
         // Initialize app
-        entryForm.style.display = 'none';
-        exportArea.style.display = 'none';
-        setCurrentDateTime();
-        loadSampleData(); // Load sample data for demo
-        loadEntries(); // Load any previously saved entries
+entryForm.style.display = 'none';
+exportArea.style.display = 'none';
+setCurrentDateTime();
+
+// Load entries first
+loadEntries(); 
+
+// Only load sample data if no entries exist at all
+if (entries.length === 0) {
+    loadSampleData();
+    showMessage("Sample data loaded for demonstration", "success");
+}
+
+// Call this function during initialization
+addBackupDownloadButton();
+
+// Modify the loadSampleData function to not call saveEntries automatically:
+function loadSampleData() {
+    entries = [
+        {date: "2025-02-25", time: "19:36", urineVolume: "9", urgency: "2", urineStream: "Strong"},
+        {date: "2025-02-25", time: "20:50", drinkType: "Water", drinkAmount: "250"},
+        {date: "2025-02-25", time: "22:15", urineVolume: "9", urgency: "2", urineStream: "Intermittent"},
+        {date: "2025-02-26", time: "07:05", urineVolume: "17", urgency: "2", urineStream: "Intermittent"},
+        {date: "2025-02-26", time: "07:52", drinkType: "Water", drinkAmount: "250"},
+        {date: "2025-02-26", time: "08:32", drinkType: "Tea", drinkAmount: "500"},
+        {date: "2025-02-26", time: "09:24", drinkType: "Water", drinkAmount: "750"},
+        {date: "2025-02-26", time: "09:56", urineVolume: "22", urgency: "1", urineStream: "Strong"},
+        {date: "2025-02-26", time: "12:41", urineVolume: "25", urgency: "1", urineStream: "Intermittent"},
+        {date: "2025-02-26", time: "12:51", drinkType: "Other", drinkAmount: "250"},
+        {date: "2025-02-26", time: "13:41", drinkType: "Water", drinkAmount: "750"}
+    ];
+    
+    // Mark these as sample data (optional)
+    entries.forEach(entry => entry.isSampleData = true);
+    
+    // Now save to storage
+    saveEntries();
+    
+    // Render entries to display
+    renderEntries();
+}
     </script>
 </body>
 </html>
