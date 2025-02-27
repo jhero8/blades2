@@ -17,9 +17,9 @@
         }
         
         body {
-            background-color: #f7f7f7;
-            color: #333;
-            line-height: 1.6;
+            background: linear-gradient(to bottom right, #f0f8ff, #f7f7f7);
+            color:  #2d3748;
+            line-height: 1.8;
             padding: 16px;
             max-width: 500px;
             margin: 0 auto;
@@ -90,7 +90,9 @@
             vertical-align: middle;
             margin-right: 4px;
         }
-        
+        .btn:hover, .card:hover {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
         /* Button styles */
         .btn {
             display: block;
@@ -103,6 +105,8 @@
             text-align: center;
             margin-bottom: 16px;
             font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s ease;
         }
         
         .btn-primary {
@@ -159,7 +163,12 @@
         
         .timer-btn.active {
             background-color: #e53e3e;
+            animation: pulseBorder 1s infinite;
         }
+        @keyframes pulseBorder {
+    0%, 100% { box-shadow: 0 0 0 2px #e53e3e; }
+    50% { box-shadow: 0 0 0 6px rgba(229,62,62,0.5); }
+}
         
         .timer-btn svg {
             margin-right: 4px;
@@ -220,6 +229,8 @@
             border: 1px solid #e2e8f0;
             border-radius: 4px;
             font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s ease;
         }
         
         .form-control:focus {
@@ -252,6 +263,8 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             margin-bottom: 16px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s ease;
         }
         
         .card-header {
@@ -269,10 +282,14 @@
         .card-body {
             padding: 16px;
         }
-        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+}
         .entry-item {
             padding: 16px;
             border-bottom: 1px solid #e2e8f0;
+            animation: fadeInUp 0.3s ease;
         }
         
         .entry-header {
@@ -453,6 +470,7 @@
             height: 150px;
             padding-bottom: 24px;
             position: relative;
+            background: linear-gradient(135deg, #68d391, #4299e1);
         }
         
         .bar-container {
@@ -566,6 +584,7 @@
             border-radius: 4px 4px 0 0;
             transition: height 0.3s;
             min-height: 2px;
+            background: linear-gradient(135deg, #68d391, #4299e1);
         }
         
         .comparison-bar.primary {
@@ -726,6 +745,25 @@
 .delete-icon:hover {
     background-color: #fed7d7;
 }
+.fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    background-color: #5a67d8;
+    color: white;
+    border-radius: 50%;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+    font-size: 24px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+.fab:hover {
+    transform: scale(1.1);
+}
+
     </style>
 </head>
 <body>
@@ -764,7 +802,9 @@
         <button id="toggleFormBtn" class="btn btn-primary">
             Add New Entry
         </button>
-        
+
+        <button class="fab" id="fabAddEntry">+</button>
+
         <div id="messageArea" class="message hidden"></div>
         
         <form id="entryForm" class="form hidden">
@@ -911,6 +951,7 @@
     <script>
         // DOM elements
         const toggleFormBtn = document.getElementById('toggleFormBtn');
+        const fabAddEntry = document.getElementById('fabAddEntry');
         const entryForm = document.getElementById('entryForm');
         const entriesList = document.getElementById('entriesList');
         const noEntriesMsg = document.getElementById('noEntriesMsg');
@@ -926,6 +967,7 @@
         const dashboard = document.getElementById('dashboard');
         const noDataMsg = document.getElementById('noDataMsg');
         const dashboardCharts = document.getElementById('dashboardCharts');
+        
         
         // Timer variables
         let timerActive = false;
@@ -953,6 +995,16 @@
         // In-memory storage (backup if localStorage fails)
         let entries = [];
         
+        fabAddEntry.addEventListener('click', function() {
+            // Simulate clicking the original toggle form button
+            toggleFormBtn.click();
+
+            // Optional smooth scroll to the form when it opens
+            if (entryForm.style.display !== 'none') {
+                entryForm.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
         // Timer functionality
         timerBtn.addEventListener('click', function() {
             if (!timerActive) {
