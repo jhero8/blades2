@@ -764,6 +764,43 @@
     transform: scale(1.1);
 }
 
+/* Date separator styling */
+.date-separator {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a5568;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 4px;
+}
+
+/* Icon styling */
+.entry-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+/* Entry animation */
+@keyframes entryAdded {
+    0% { background-color: rgba(72,187,120,0.2); }
+    100% { background-color: white; }
+}
+
+@keyframes entryDeleted {
+    0% { background-color: rgba(229,62,62,0.2); opacity: 1; }
+    100% { opacity: 0; transform: translateX(-50px); }
+}
+
+.entry-added {
+    animation: entryAdded 1s ease;
+}
+
+.entry-deleted {
+    animation: entryDeleted 0.5s ease forwards;
+}
+
+
     </style>
 </head>
 <body>
@@ -1210,109 +1247,85 @@ function deleteEntryAtIndex(index) {
         // Render entries list
         function renderEntries(showAll = false) {
     try {
-        // Clear all children except noEntriesMsg
-        while (entriesList.firstChild) {
-            entriesList.removeChild(entriesList.firstChild);
-        }
-        
-        // Add the "no entries" message back
-        entriesList.appendChild(noEntriesMsg);
-        
+        entriesList.innerHTML = ''; // Clear current list
+
         if (entries.length === 0) {
             noEntriesMsg.style.display = 'block';
             return;
         }
-        
+
         noEntriesMsg.style.display = 'none';
-        
-        // Sort entries by date and time (newest first)
-        entries.sort(function(a, b) {
-            // Compare dates directly as strings (YYYY-MM-DD format sorts correctly)
-            if (a.date !== b.date) {
-                return a.date < b.date ? 1 : -1;
-            }
-            // If dates are the same, compare times
-            return a.time < b.time ? 1 : -1;
-        });
-        
-        // Limit the number of entries shown initially
+
+        // Sort entries
+        entries.sort((a, b) => (a.date + a.time < b.date + b.time ? 1 : -1));
+
         const displayLimit = showAll ? entries.length : 7;
         const displayEntries = entries.slice(0, displayLimit);
-        
-        // Add each entry to the list
-        for (let i = 0; i < displayEntries.length; i++) {
-            const entry = displayEntries[i];
+
+        let lastDate = '';
+
+        displayEntries.forEach((entry, index) => {
+            if (entry.date !== lastDate) {
+                const dateSeparator = document.createElement('div');
+                dateSeparator.className = 'date-separator';
+                dateSeparator.textContent = formatDate(entry.date);
+                entriesList.appendChild(dateSeparator);
+                lastDate = entry.date;
+            }
+
             const entryEl = document.createElement('div');
             entryEl.className = 'entry-item';
-            
-            let entryHtml = `
-                <div class="entry-header">
-                    <div class="entry-date">
-                        ${formatDate(entry.date)} at ${entry.time}
-                    </div>
-                    <div class="entry-actions">
-                        <div class="edit-icon" title="Edit" onclick="editEntryAtIndex(${entries.indexOf(entry)})">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                            </svg>
-                        </div>
-                        <div class="delete-icon" title="Delete" onclick="confirmDeleteEntryAtIndex(${entries.indexOf(entry)})">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                <div class="entry-details">
-            `;
-            
-            if (entry.drinkType) {
-                entryHtml += `
-                    <div class="entry-label">Drink:</div>
-                    <div>${entry.drinkType} (${entry.drinkAmount || 0} ml)</div>
-                `;
-            }
-            
-            if (entry.urineVolume) {
-                entryHtml += `
-                    <div class="entry-label">Urine:</div>
-                    <div>${entry.urineVolume} seconds (Urgency: ${entry.urgency || 'N/A'})</div>
-                `;
-            }
-            
-            if (entry.urineStream) {
-                entryHtml += `
-                    <div class="entry-label">Urine Flow:</div>
-                    <div>Stream: ${entry.urineStream}</div>
-                `;
-            }
-            
-            entryHtml += `</div>`;
-            entryEl.innerHTML = entryHtml;
+
+            // Determine minimalist icon
+let icon = '';
+if (entry.drinkType) {
+    icon = '||'; // neutral drop for all drink types
+} else if (entry.urineVolume) {
+    icon = '○'; // simple circle indicating urine
+}
+
+entryEl.innerHTML = `
+    <div class="entry-header">
+        <div class="entry-date">
+            <span class="entry-icon">${icon}</span>${entry.time}
+        </div>
+        <div class="entry-actions">
+            <div class="edit-icon" title="Edit" onclick="editEntryAtIndex(${entries.indexOf(entry)})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                </svg>
+            </div>
+            <div class="delete-icon" title="Delete" onclick="confirmDeleteEntryAtIndex(${entries.indexOf(entry)})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="entry-details">
+        ${entry.drinkType ? `<div class="entry-label">Drink:</div><div>${entry.drinkType} (${entry.drinkAmount || 0} ml)</div>` : ''}
+        ${entry.urineVolume ? `<div class="entry-label">Urine:</div><div>${entry.urineVolume} sec (Urgency: ${entry.urgency || 'N/A'})</div>` : ''}
+        ${entry.urineStream ? `<div class="entry-label">Urine Flow:</div><div>${entry.urineStream}</div>` : ''}
+    </div>
+`;
+
             entriesList.appendChild(entryEl);
-        }
-        
-        // Add "Load more" button if there are more entries to show
+        });
+
         if (!showAll && entries.length > displayLimit) {
             const loadMoreButton = document.createElement('div');
             loadMoreButton.className = 'load-more-button';
             loadMoreButton.textContent = 'Load more...';
-            loadMoreButton.addEventListener('click', function() {
-                renderEntries(true);
-            });
+            loadMoreButton.onclick = () => renderEntries(true);
             entriesList.appendChild(loadMoreButton);
-        }
-        
-        // If dashboard is visible, update it too
-        if (!dashboard.classList.contains('hidden')) {
-            renderDashboard();
         }
     } catch (error) {
         console.error('Error rendering entries', error);
         showMessage('Error displaying entries');
     }
 }
+
 
 // Add this new function for editing entries
 function editEntryAtIndex(index) {
@@ -1505,9 +1518,9 @@ function editEntryAtIndex(index) {
 
         
         // Handle form submission
-        entryForm.addEventListener('submit', function(e) {
+entryForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     try {
         // If timer is still running, stop it
         if (timerActive) {
@@ -1520,52 +1533,65 @@ function editEntryAtIndex(index) {
             timerIndicator.classList.add('hidden');
             timerIndicator.classList.remove('pulse');
         }
-        
+
         // Get form values
+        const drinkType = document.getElementById('drinkType').value;
+        const drinkAmount = document.getElementById('drinkAmount').value;
+        const urineVolume = document.getElementById('urineVolume').value;
+        const urgency = document.getElementById('urgency').value;
+        const urineStream = document.getElementById('urineStream').value;
+
+        // Check if at least one field is filled
+        if (!drinkType && !drinkAmount && !urineVolume && !urgency && !urineStream) {
+            showMessage('Please enter at least one type of data before saving.', 'danger');
+            return;
+        }
+
         const entryData = {
             date: document.getElementById('date').value,
             time: document.getElementById('time').value,
-            drinkType: document.getElementById('drinkType').value,
-            drinkAmount: document.getElementById('drinkAmount').value,
-            urineVolume: document.getElementById('urineVolume').value,
-            urgency: document.getElementById('urgency').value,
-            urineStream: document.getElementById('urineStream').value
+            drinkType,
+            drinkAmount,
+            urineVolume,
+            urgency,
+            urineStream
         };
-        
+
         // Check if we're editing an existing entry
         const editIndex = entryForm.dataset.editIndex;
         if (editIndex !== undefined) {
             // Update existing entry
             entries[editIndex] = entryData;
             delete entryForm.dataset.editIndex;
-            
+
             // Change the submit button text back
             const submitBtn = entryForm.querySelector('button[type="submit"]');
             submitBtn.textContent = 'Save Entry';
-            
+
             showMessage('Entry updated successfully!', 'success');
         } else {
             // Add new entry
             entries.push(entryData);
             showMessage('Entry saved successfully!', 'success');
         }
-        
+
         // Save to storage
         saveEntries();
-        
+
         // Render entries
         renderEntries();
-        
+
         // Reset form and hide
         entryForm.reset();
         entryForm.style.display = 'none';
         toggleFormBtn.textContent = 'Add New Entry';
-        
+
     } catch (error) {
         console.error('Error saving entry', error);
         showMessage('Error saving entry');
     }
 });
+
         
         // Toggle export data
 toggleExportBtn.addEventListener('click', function() {
