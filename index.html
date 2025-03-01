@@ -141,7 +141,7 @@
         .btn-secondary {
             background-color: #4299e1;
             color: white;
-            padding: 8px 16px;
+            /*padding: 8px 16px;*/
             font-size: 14px;
             margin: 8px 0;
             display: inline-block;
@@ -1356,6 +1356,12 @@ function deleteEntryAtIndex(index) {
         entries.splice(index, 1);
         saveEntries();
         renderEntries();
+        
+        // Update dashboard if it's visible
+        if (!dashboard.classList.contains('hidden')) {
+            renderDashboard();
+        }
+        
         showMessage('Entry deleted', 'success');
     } catch (error) {
         console.error('Error deleting entry', error);
@@ -1686,6 +1692,12 @@ function editEntryAtIndex(index) {
                             entries = importedData;
                             saveEntries();
                             renderEntries();
+                            
+                            // Update dashboard if it's visible
+                            if (!dashboard.classList.contains('hidden')) {
+                                renderDashboard();
+                            }
+                            
                             showMessage(`Successfully imported ${importedData.length} entries!`, 'success');
                         }
                     } else {
@@ -1796,6 +1808,11 @@ entryForm.addEventListener('submit', function(e) {
 
         // Render entries
         renderEntries();
+        
+        // Check if dashboard is visible and update charts if needed
+        if (!dashboard.classList.contains('hidden')) {
+            renderDashboard();
+        }
 
         // Reset form and hide
         entryForm.reset();
@@ -2866,6 +2883,12 @@ toggleExportBtn.addEventListener('click', function() {
             // Simulate a refresh (in this case, just reload entries from storage)
             setTimeout(function() {
                 loadEntries();
+                
+                // Update dashboard if visible
+                if (!dashboard.classList.contains('hidden')) {
+                    renderDashboard();
+                }
+                
                 pullToRefresh.classList.remove('visible', 'refreshing');
                 isRefreshing = false;
                 showMessage('Refreshed', 'success');
@@ -2898,6 +2921,12 @@ function addLogoRefreshFunctionality() {
             
             // Perform the actual refresh (same as pull-to-refresh)
             loadEntries();
+            
+            // Update dashboard if visible
+            if (!dashboard.classList.contains('hidden')) {
+                renderDashboard();
+            }
+            
             showMessage('Data refreshed', 'success');
         });
     }
