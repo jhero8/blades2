@@ -3006,11 +3006,15 @@ function calculateAverageTimeBetweenUrinations() {
     
     entries.forEach(entry => {
         if (entry.urineVolume) {  // Check if it's a urination entry
-            if (!urinationsByDate[entry.date]) {
-                urinationsByDate[entry.date] = [];
+            // Only consider entries between 8am and 11pm
+            const hour = parseInt(entry.time.split(':')[0]);
+            if (hour >= 8 && hour <= 23) {
+                if (!urinationsByDate[entry.date]) {
+                    urinationsByDate[entry.date] = [];
+                }
+                // Store the time of urination
+                urinationsByDate[entry.date].push(entry.time);
             }
-            // Store the time of urination
-            urinationsByDate[entry.date].push(entry.time);
         }
     });
     
@@ -3041,13 +3045,8 @@ function calculateAverageTimeBetweenUrinations() {
             // Calculate difference
             const diffMinutes = currMinutes - prevMinutes;
             
-            // Only count reasonable gaps during waking hours
-            // We exclude gaps longer than 12 hours (720 minutes) as these are likely overnight
-            // sleep periods. Including these would skew the daytime frequency analysis.
-            // Most people sleep 7-9 hours, and any gaps of >12 hours almost certainly
-            // include sleep time. This exclusion gives a more accurate picture of
-            // daytime urination frequency, which is the primary clinical concern.
-            if (diffMinutes > 0 && diffMinutes < 12 * 60) {  // Less than 12 hours
+            // Only count reasonable gaps (we already filtered for 8am-11pm entries)
+            if (diffMinutes > 0) {
                 totalMinutes += diffMinutes;
                 gapCount++;
             }
@@ -3417,20 +3416,20 @@ function renderTimeGapChart() {
         }
         
         // Draw an improved note about the data with clearer explanation
-        ctx.fillStyle = '#718096';
-        // Smaller font on mobile
-        ctx.font = isMobile ? 'italic 8px sans-serif' : 'italic 10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-        
-        // Position well below the trend message on mobile
-        const noteY = height - padding.bottom + (isMobile ? 48 : 42);
-        
-        ctx.fillText(
-            '* Only includes daytime gaps; excludes overnight sleep periods',
-            width / 2,
-            noteY
-        );
+ctx.fillStyle = '#718096';
+// Smaller font on mobile
+ctx.font = isMobile ? 'italic 8px sans-serif' : 'italic 10px sans-serif';
+ctx.textAlign = 'center';
+ctx.textBaseline = 'top';
+
+// Position well below the trend message on mobile
+const noteY = height - padding.bottom + (isMobile ? 48 : 42);
+
+ctx.fillText(
+    '* Only includes urinations between 8am and 11pm',
+    width / 2,
+    noteY
+);
         
     } catch (error) {
         console.error('Error rendering time gap chart', error);
