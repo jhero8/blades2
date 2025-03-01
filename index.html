@@ -1861,14 +1861,23 @@ toggleExportBtn.addEventListener('click', function() {
             const width = canvas.width;
             const height = canvas.height;
             
+            // Detect if we're on a small screen (like mobile)
+            const isMobile = width < 400;
+            
             ctx.fillStyle = '#f8f9fa';
             ctx.fillRect(0, 0, width, height);
             
-            ctx.font = '14px sans-serif';
+            ctx.font = `${isMobile ? 12 : 14}px sans-serif`;
             ctx.fillStyle = '#a0aec0';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(message, width / 2, height / 2);
+            
+            // Add an icon or helper text for mobile
+            if (isMobile) {
+                ctx.font = '10px sans-serif';
+                ctx.fillText('Add more entries to see data here', width / 2, height / 2 + 20);
+            }
         }
         
         // Dashboard-related functions
@@ -1939,7 +1948,17 @@ toggleExportBtn.addEventListener('click', function() {
                 const ctx = canvas.getContext('2d');
                 const width = canvas.width;
                 const height = canvas.height;
-                const padding = { top: 30, right: 20, bottom: 40, left: 30 };
+                
+                // Detect if we're on a small screen (like mobile)
+                const isMobile = width < 400;
+                
+                // Adjust padding based on screen size
+                const padding = {
+                    top: 30,
+                    right: isMobile ? 10 : 20,
+                    bottom: isMobile ? 60 : 40,
+                    left: isMobile ? 40 : 50
+                };
                 
                 const chartWidth = width - padding.left - padding.right;
                 const chartHeight = height - padding.top - padding.bottom;
@@ -1955,8 +1974,11 @@ toggleExportBtn.addEventListener('click', function() {
                 ctx.strokeStyle = '#e2e8f0';
                 ctx.lineWidth = 1;
                 
-                for (let i = 0; i <= 5; i++) {
-                    const y = padding.top + chartHeight - (i / 5) * chartHeight;
+                // Mobile-optimized grid lines - draw fewer on small screens
+                const gridLines = isMobile ? 4 : 5;
+                
+                for (let i = 0; i <= gridLines; i++) {
+                    const y = padding.top + chartHeight - (i / gridLines) * chartHeight;
                     ctx.beginPath();
                     ctx.moveTo(padding.left, y);
                     ctx.lineTo(width - padding.right, y);
@@ -1964,14 +1986,14 @@ toggleExportBtn.addEventListener('click', function() {
                     
                     // Draw y-axis labels
                     ctx.fillStyle = '#718096';
-                    ctx.font = '10px sans-serif';
+                    ctx.font = isMobile ? '9px sans-serif' : '10px sans-serif';
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText(Math.round((i / 5) * maxFrequency), padding.left - 5, y);
+                    ctx.fillText(Math.round((i / gridLines) * maxFrequency), padding.left - 5, y);
                 }
                 
                 // Draw bars
-                const barWidth = chartWidth / dateFrequencies.length * 0.7;
+                const barWidth = chartWidth / dateFrequencies.length * (isMobile ? 0.6 : 0.7); // Thinner on mobile
                 const barSpacing = chartWidth / dateFrequencies.length;
                 
                 dateFrequencies.forEach((dateFreq, index) => {
@@ -1992,22 +2014,62 @@ toggleExportBtn.addEventListener('click', function() {
                     
                     // Draw bar value
                     ctx.fillStyle = '#4a5568';
-                    ctx.font = '10px sans-serif';
+                    ctx.font = isMobile ? '9px sans-serif' : '10px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'bottom';
                     ctx.fillText(count, x + barWidth / 2, y - 5);
                     
                     // Draw x-axis labels
                     ctx.fillStyle = '#718096';
-                    ctx.font = '10px sans-serif';
+                    ctx.font = isMobile ? '9px sans-serif' : '10px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'top';
                     ctx.save();
+                    
+                    // Simplified date format for mobile
+                    let displayDate;
+                    if (isMobile) {
+                        // Show minimal date format on mobile ("25" instead of "Feb 25")
+                        const dateParts = date.split('-');
+                        const day = parseInt(dateParts[2]);
+                        displayDate = `${day}`;
+                    } else {
+                        displayDate = formatDate(date);
+                    }
+                    
                     ctx.translate(x + barWidth / 2, height - padding.bottom / 2);
-                    ctx.rotate(-Math.PI / 4); // Rotate labels 45 degrees
-                    ctx.fillText(formatDate(date), 0, 0);
+                    ctx.rotate(-Math.PI / (isMobile ? 3 : 4)); // Rotate more on mobile
+                    ctx.fillText(displayDate, 0, 0);
                     ctx.restore();
                 });
+                
+                // Add month labels for mobile displays
+                if (isMobile && dateFrequencies.length > 0) {
+                    // Add month labels above the day numbers
+                    dateFrequencies.forEach(([date], index) => {
+                        const dateParts = date.split('-');
+                        const monthIndex = parseInt(dateParts[1]) - 1; // 0-based month
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        
+                        // Only show month for first day of month or first data point
+                        if (index === 0 || dateParts[2] === '01') {
+                            const x = padding.left + index * barSpacing + barSpacing / 2;
+                            ctx.fillStyle = '#a0aec0'; // Lighter color for month
+                            ctx.font = '8px sans-serif'; // Smaller than day
+                            ctx.textAlign = 'center';
+                            ctx.fillText(months[monthIndex], x, height - padding.bottom + 20);
+                        }
+                    });
+                }
+                
+                // Add title for context on mobile
+                if (isMobile) {
+                    ctx.fillStyle = '#4a5568';
+                    ctx.font = 'bold 10px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText('Number of urinations per day', width / 2, height - 15);
+                }
             } catch (error) {
                 console.error('Error rendering frequency chart', error);
                 const canvas = document.getElementById('frequencyCanvas');
@@ -2051,15 +2113,21 @@ toggleExportBtn.addEventListener('click', function() {
                 const ctx = canvas.getContext('2d');
                 const width = canvas.width;
                 const height = canvas.height;
-                const centerX = width / 2;
+                
+                // Detect if we're on a small screen (like mobile)
+                const isMobile = width < 400;
+                
+                // Adjust dimensions based on screen size
+                const centerX = width / 2.2; // Shift pie slightly left to make room for legend
                 const centerY = height / 2;
-                const radius = Math.min(width, height) / 2 - 30;
+                // Smaller pie on mobile
+                const radius = Math.min(width, height) / (isMobile ? 2.8 : 2.5) - 30;
                 
                 // Colors for urgency levels
                 const colors = {
                     '0': '#48bb78', // Green for none
-                    '1': '#ecc94b', // Yellow for mild
-                    '2': '#ed8936', // Orange for moderate
+                    '1': '#4299e1', // Blue for mild
+                    '2': '#ecc94b', // Yellow for moderate
                     '3': '#e53e3e'  // Red for severe
                 };
                 
@@ -2071,14 +2139,14 @@ toggleExportBtn.addEventListener('click', function() {
                     '3': 'Severe'
                 };
                 
-                // Draw pie chart
-                let startAngle = 0;
-                
-                // First, draw the background
+                // Draw background
                 ctx.fillStyle = '#f8f9fa';
                 ctx.fillRect(0, 0, width, height);
                 
-                // Now draw each slice of the pie
+                // Draw pie chart
+                let startAngle = 0;
+                
+                // Draw each slice of the pie
                 for (const [level, count] of Object.entries(urgencyCounts)) {
                     if (count > 0) {
                         const sliceAngle = (count / total) * 2 * Math.PI;
@@ -2095,13 +2163,14 @@ toggleExportBtn.addEventListener('click', function() {
                         const labelAngle = startAngle + sliceAngle / 2;
                         const percent = Math.round((count / total) * 100);
                         
-                        if (percent >= 5) { // Only draw label if the slice is big enough
-                            // Position the label midway through the slice, at 2/3 of the radius
+                        // Only draw percentage label if slice is big enough
+                        if (percent >= (isMobile ? 8 : 5)) {
+                            // Position the label at 2/3 of radius
                             const labelX = centerX + Math.cos(labelAngle) * (radius * 0.65);
                             const labelY = centerY + Math.sin(labelAngle) * (radius * 0.65);
                             
                             ctx.fillStyle = 'white';
-                            ctx.font = 'bold 12px sans-serif';
+                            ctx.font = `bold ${isMobile ? 10 : 12}px sans-serif`;
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
                             ctx.fillText(`${percent}%`, labelX, labelY);
@@ -2111,27 +2180,52 @@ toggleExportBtn.addEventListener('click', function() {
                     }
                 }
                 
-                // Draw legend
-                let legendY = 20;
+                // Draw legend - optimized for mobile
+                const legendX = isMobile ? width * 0.68 : width * 0.7;
+                let legendY = isMobile ? centerY - radius : 20;
+                
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'middle';
                 
+                // Draw title for legend on mobile
+                if (isMobile) {
+                    ctx.fillStyle = '#4a5568';
+                    ctx.font = 'bold 10px sans-serif';
+                    ctx.fillText('Urgency levels:', legendX, legendY - 20);
+                }
+                
                 for (const [level, count] of Object.entries(urgencyCounts)) {
                     if (count > 0) {
-                        const legendX = width * 0.7;
-                        
                         // Draw legend color box
                         ctx.fillStyle = colors[level];
-                        ctx.fillRect(legendX, legendY, 12, 12);
+                        // Smaller boxes on mobile
+                        const boxSize = isMobile ? 10 : 12;
+                        ctx.fillRect(legendX, legendY, boxSize, boxSize);
                         
                         // Draw legend text
                         ctx.fillStyle = '#4a5568';
-                        ctx.font = '12px sans-serif';
-                        ctx.fillText(`${urgencyLabels[level]} (${count})`, legendX + 18, legendY + 6);
+                        ctx.font = `${isMobile ? 9 : 12}px sans-serif`;
+                        ctx.fillText(
+                            `${urgencyLabels[level]} (${count})`,
+                            legendX + boxSize + 6,
+                            legendY + boxSize/2
+                        );
                         
-                        legendY += 20;
+                        // Less spacing on mobile
+                        legendY += isMobile ? 16 : 20;
                     }
                 }
+                
+                // Add note about urgency scale on mobile
+                if (isMobile) {
+                    const noteY = height - 15;
+                    ctx.fillStyle = '#718096';
+                    ctx.font = 'italic 8px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('Urgency scale: 0 (None) to 3 (Severe)', width / 2, noteY);
+                }
+                
             } catch (error) {
                 console.error('Error rendering urgency chart', error);
                 const canvas = document.getElementById('urgencyCanvas');
@@ -2192,7 +2286,17 @@ toggleExportBtn.addEventListener('click', function() {
                 const ctx = canvas.getContext('2d');
                 const width = canvas.width;
                 const height = canvas.height;
-                const padding = { top: 30, right: 20, bottom: 50, left: 50 };
+                
+                // Detect if we're on a small screen (like mobile)
+                const isMobile = width < 400;
+                
+                // Adjust padding based on screen size
+                const padding = {
+                    top: 30,
+                    right: isMobile ? 10 : 20,
+                    bottom: isMobile ? 60 : 40,
+                    left: isMobile ? 40 : 50
+                };
                 
                 const chartWidth = width - padding.left - padding.right;
                 const chartHeight = height - padding.top - padding.bottom;
@@ -2221,42 +2325,57 @@ toggleExportBtn.addEventListener('click', function() {
                 ctx.lineTo(width - padding.right, height - padding.bottom);
                 ctx.stroke();
                 
+                // Mobile-optimized grid lines - draw fewer on small screens
+                const gridLines = isMobile ? 3 : 5;
+                
                 // Draw horizontal grid lines for drink amount
-                for (let i = 0; i <= 5; i++) {
-                    const y = padding.top + (1 - i / 5) * chartHeight;
+                for (let i = 0; i <= gridLines; i++) {
+                    const y = padding.top + (1 - i / gridLines) * chartHeight;
                     ctx.beginPath();
                     ctx.moveTo(padding.left, y);
                     ctx.lineTo(width - padding.right, y);
                     ctx.stroke();
                     
                     // Draw y-axis labels for drink amount
-                    const drinkValue = Math.round((i / 5) * maxDrink);
+                    const drinkValue = Math.round((i / gridLines) * maxDrink);
                     ctx.fillStyle = '#4f9cf9';
-                    ctx.font = '10px sans-serif';
+                    ctx.font = isMobile ? '9px sans-serif' : '10px sans-serif';
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText(`${drinkValue} ml`, padding.left - 5, y);
+                    ctx.fillText(`${drinkValue}${isMobile ? '' : ' ml'}`, padding.left - 5, y);
                 }
                 
                 // Draw group bar chart
-                const barWidth = chartWidth / dailyDataArray.length * 0.3;
+                const barWidth = chartWidth / dailyDataArray.length * (isMobile ? 0.25 : 0.3);
                 const groupWidth = chartWidth / dailyDataArray.length;
                 
                 dailyDataArray.forEach((day, index) => {
+                    // Simplified date format for mobile
+                    let displayDate;
+                    if (isMobile) {
+                        // Show minimal date format on mobile ("25" instead of "Feb 25")
+                        const dateParts = day.date.split('-');
+                        const dayNum = parseInt(dateParts[2]);
+                        displayDate = `${dayNum}`;
+                    } else {
+                        displayDate = formatDate(day.date);
+                    }
+                    
                     // Draw date label
                     ctx.fillStyle = '#718096';
-                    ctx.font = '10px sans-serif';
+                    ctx.font = isMobile ? '9px sans-serif' : '10px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'top';
                     ctx.save();
                     ctx.translate(padding.left + index * groupWidth + groupWidth / 2, height - padding.bottom + 5);
-                    ctx.rotate(-Math.PI / 4); // Rotate labels 45 degrees
-                    ctx.fillText(formatDate(day.date), 0, 0);
+                    ctx.rotate(-Math.PI / (isMobile ? 3 : 4)); // Rotate more on mobile
+                    ctx.fillText(displayDate, 0, 0);
                     ctx.restore();
                     
                     // Draw drink amount bar
                     const drinkBarHeight = maxDrink > 0 ? (day.drinkAmount / maxDrink) * chartHeight : 0;
-                    const drinkX = padding.left + index * groupWidth + groupWidth * 0.25;
+                    // Move bars closer on mobile
+                    const drinkX = padding.left + index * groupWidth + (isMobile ? groupWidth * 0.30 : groupWidth * 0.25);
                     const drinkY = height - padding.bottom - drinkBarHeight;
                     
                     ctx.fillStyle = '#4f9cf9';
@@ -2267,14 +2386,15 @@ toggleExportBtn.addEventListener('click', function() {
                     // Draw drink value
                     if (day.drinkAmount > 0) {
                         ctx.fillStyle = '#4a5568';
-                        ctx.font = '10px sans-serif';
+                        ctx.font = isMobile ? '9px sans-serif' : '10px sans-serif';
                         ctx.textAlign = 'center';
                         ctx.fillText(day.drinkAmount, drinkX + barWidth / 2, drinkY - 5);
                     }
                     
                     // Draw urination count bar scaled up for visibility
                     const countBarHeight = maxCount > 0 ? (day.urinationCount / maxCount) * chartHeight : 0;
-                    const countX = padding.left + index * groupWidth + groupWidth * 0.6;
+                    // Move bars closer on mobile
+                    const countX = padding.left + index * groupWidth + (isMobile ? groupWidth * 0.60 : groupWidth * 0.6);
                     const countY = height - padding.bottom - countBarHeight;
                     
                     ctx.fillStyle = '#a651e6';
@@ -2285,11 +2405,30 @@ toggleExportBtn.addEventListener('click', function() {
                     // Draw count value
                     if (day.urinationCount > 0) {
                         ctx.fillStyle = '#4a5568';
-                        ctx.font = '10px sans-serif';
+                        ctx.font = isMobile ? '9px sans-serif' : '10px sans-serif';
                         ctx.textAlign = 'center';
                         ctx.fillText(day.urinationCount, countX + barWidth / 2, countY - 5);
                     }
                 });
+                
+                // Add month labels for mobile displays
+                if (isMobile && dailyDataArray.length > 0) {
+                    // Add month labels above the day numbers
+                    dailyDataArray.forEach((day, index) => {
+                        const dateParts = day.date.split('-');
+                        const monthIndex = parseInt(dateParts[1]) - 1; // 0-based month
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        
+                        // Only show month for first day of month or first data point
+                        if (index === 0 || dateParts[2] === '01') {
+                            const x = padding.left + index * groupWidth + groupWidth / 2;
+                            ctx.fillStyle = '#a0aec0'; // Lighter color for month
+                            ctx.font = '8px sans-serif'; // Smaller than day
+                            ctx.textAlign = 'center';
+                            ctx.fillText(months[monthIndex], x, height - padding.bottom + 20);
+                        }
+                    });
+                }
                 
                 // Draw legend
                 const legendY = height - 15;
@@ -2330,6 +2469,9 @@ toggleExportBtn.addEventListener('click', function() {
         const ctx = canvas.getContext('2d');
         const width = canvas.width;
         const height = canvas.height;
+        
+        // Detect if we're on a small screen (like mobile)
+        const isMobile = width < 400;
 
         // Get all entries with urine stream data
         const streamEntries = entries.filter(entry => entry.urineStream);
@@ -2346,8 +2488,8 @@ toggleExportBtn.addEventListener('click', function() {
             return a.time.localeCompare(b.time);
         });
 
-        // IMPROVED: Limit to the most recent 12 entries for better visibility
-        const recentEntries = streamEntries.slice(-12);
+        // IMPROVED: Limit to the most recent entries for better visibility on mobile
+        const recentEntries = streamEntries.slice(-(isMobile ? 8 : 12));
 
         // Convert stream types to numeric values
         const streamValues = {
@@ -2374,36 +2516,31 @@ toggleExportBtn.addEventListener('click', function() {
         ctx.fillRect(0, 0, width, height);
 
         // IMPROVED: Layout zones with proper margins for all screen sizes
-        const padding = Math.min(width, height) * 0.05; // 5% padding
+        const padding = Math.min(width, height) * (isMobile ? 0.04 : 0.05); // Less padding on mobile
         
-        // REMOVED TITLE: No "Urine Stream Strength Over Time" text
         const layout = {
-            // Remove title area and start directly with goal
             goal: { top: padding * 2, height: padding },
             chart: {
-                top: padding * 4, // Adjusted to account for removed title
-                // INCREASED vertical space by reducing bottom padding
-                bottom: height - padding * 7,
-                left: padding * 5,
+                top: padding * 4,
+                bottom: height - padding * (isMobile ? 6 : 7), // More chart space on mobile
+                left: padding * (isMobile ? 4 : 5), // Less left padding on mobile
                 right: width - padding * 2
             },
             trend: { top: height - padding * 4, height: padding * 1.5 },
             legend: { top: height - padding * 2, height: padding }
         };
 
-        // REMOVED: Skip drawing the title "Urine Stream Strength Over Time"
-
-        // Draw goal
+        // Draw goal with mobile optimization
         ctx.fillStyle = '#4a5568';
-        ctx.font = 'italic 14px sans-serif';
+        ctx.font = `italic ${isMobile ? 11 : 14}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
         const goalText = 'Goal: Strong urine stream indicates better bladder health';
-        const maxGoalWidth = width * 0.9; // 90% of canvas width
+        const maxGoalWidth = width * (isMobile ? 0.95 : 0.9); // More width on mobile
 
         // Check if we need to break the text
-        ctx.font = 'italic 14px sans-serif'; // Set font before measuring
+        ctx.font = `italic ${isMobile ? 11 : 14}px sans-serif`; // Set font before measuring
         const goalWidth = ctx.measureText(goalText).width;
 
         if (goalWidth > maxGoalWidth && width < 400) {
@@ -2461,12 +2598,12 @@ toggleExportBtn.addEventListener('click', function() {
 
             // Adjust font size for stream labels based on available space
             const leftPadding = layout.chart.left;
-            const maxLabelWidth = leftPadding - 15; // Leave some margin
+            const maxLabelWidth = leftPadding - (isMobile ? 10 : 15); // Less margin on mobile
             
             ctx.fillStyle = level.color;
             
-            // FIXED: Use SAME SIZE for all labels (to match Intermittent)
-            const fontSize = 12;
+            // Mobile-optimized fonts
+            const fontSize = isMobile ? 10 : 12;
             
             ctx.font = `bold ${fontSize}px sans-serif`;
             ctx.textAlign = 'right';
@@ -2483,7 +2620,7 @@ toggleExportBtn.addEventListener('click', function() {
                 ctx.font = `bold ${adjustedFontSize}px sans-serif`;
             }
             
-            ctx.fillText(level.label, layout.chart.left - 10, yPos);
+            ctx.fillText(level.label, layout.chart.left - (isMobile ? 6 : 10), yPos);
         });
 
         // IMPROVED: Calculate available width more accurately
@@ -2494,7 +2631,7 @@ toggleExportBtn.addEventListener('click', function() {
 
             ctx.beginPath();
             ctx.strokeStyle = '#4f9cf9';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = isMobile ? 1.5 : 2; // Thinner line on mobile
 
             dataPoints.forEach((point, index) => {
                 const x = layout.chart.left + index * dateStep;
@@ -2509,23 +2646,53 @@ toggleExportBtn.addEventListener('click', function() {
 
                 // Draw date labels - improved spacing
                 ctx.fillStyle = '#718096';
-                ctx.font = '12px sans-serif';
+                ctx.font = `${isMobile ? 9 : 12}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
+                
+                // Simplified date format for mobile
+                let displayLabel;
+                if (isMobile) {
+                    const dateParts = point.date.split('-');
+                    const day = parseInt(dateParts[2]);
+                    displayLabel = `${day}`;
+                } else {
+                    displayLabel = point.displayDate;
+                }
+                
                 // Rotate date labels if many dates
-                if (dataPoints.length > 4) {
+                if (dataPoints.length > (isMobile ? 3 : 4)) {
                     ctx.save();
                     ctx.translate(x, layout.chart.bottom + 10);
-                    ctx.rotate(-Math.PI / 6); // Rotate less for better readability
-                    ctx.fillText(point.displayDate, 0, 0);
+                    ctx.rotate(-Math.PI / (isMobile ? 3 : 6)); // Rotate more on mobile
+                    ctx.fillText(displayLabel, 0, 0);
                     ctx.restore();
                 } else {
-                    ctx.fillText(point.displayDate, x, layout.chart.bottom + 10);
+                    ctx.fillText(displayLabel, x, layout.chart.bottom + 10);
                 }
             });
             ctx.stroke();
 
-            // Draw point circles
+            // Add month labels for mobile displays
+            if (isMobile && dataPoints.length > 0) {
+                // Add month labels above the day numbers
+                dataPoints.forEach((point, index) => {
+                    const dateParts = point.date.split('-');
+                    const monthIndex = parseInt(dateParts[1]) - 1; // 0-based month
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    
+                    // Only show month for first day of month or first data point
+                    if (index === 0 || dateParts[2] === '01') {
+                        const x = layout.chart.left + index * dateStep;
+                        ctx.fillStyle = '#a0aec0'; // Lighter color for month
+                        ctx.font = '8px sans-serif'; // Smaller than day
+                        ctx.textAlign = 'center';
+                        ctx.fillText(months[monthIndex], x, layout.chart.bottom + 28);
+                    }
+                });
+            }
+
+            // Draw point circles - smaller on mobile
             dataPoints.forEach((point, index) => {
                 const x = layout.chart.left + index * dateStep;
                 // IMPROVED: Use adjusted level height calculation
@@ -2541,12 +2708,12 @@ toggleExportBtn.addEventListener('click', function() {
 
                 ctx.beginPath();
                 ctx.fillStyle = pointColor;
-                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.arc(x, y, isMobile ? 6 : 8, 0, Math.PI * 2);
                 ctx.fill();
 
                 // White outline
                 ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = isMobile ? 1.5 : 2;
                 ctx.stroke();
             });
 
@@ -2577,7 +2744,7 @@ toggleExportBtn.addEventListener('click', function() {
                 ctx.beginPath();
                 ctx.strokeStyle = trendColor;
                 ctx.setLineDash([5, 3]);
-                ctx.lineWidth = 2.5;
+                ctx.lineWidth = isMobile ? 2 : 2.5;
 
                 const firstX = layout.chart.left;
                 // IMPROVED: Use adjusted level height calculation
@@ -2591,9 +2758,9 @@ toggleExportBtn.addEventListener('click', function() {
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // Trend text
+                // Trend text - smaller on mobile
                 ctx.fillStyle = trendColor;
-                ctx.font = 'bold 16px sans-serif';
+                ctx.font = `bold ${isMobile ? 14 : 16}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(
@@ -2602,9 +2769,9 @@ toggleExportBtn.addEventListener('click', function() {
                     layout.trend.top + layout.trend.height / 2
                 );
 
-                // Legend text
+                // Legend text - smaller on mobile
                 ctx.fillStyle = '#4a5568';
-                ctx.font = '14px sans-serif';
+                ctx.font = `${isMobile ? 11 : 14}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(
@@ -3216,6 +3383,70 @@ function optimizeChartContainers() {
             // Set appropriate height for the time gap chart
             const timeGapChart = chart.querySelector('#timeGapChart');
             timeGapChart.style.height = isMobile ? '300px' : '220px';
+        }
+        
+        // Optimize frequency chart height
+        if (chart.querySelector('#frequencyChart')) {
+            const frequencyChart = chart.querySelector('#frequencyChart');
+            frequencyChart.style.height = isMobile ? '280px' : '220px';
+        }
+        
+        // Optimize urgency chart height
+        if (chart.querySelector('#urgencyChart')) {
+            const urgencyChart = chart.querySelector('#urgencyChart');
+            urgencyChart.style.height = isMobile ? '280px' : '220px';
+        }
+        
+        // Optimize correlation chart height
+        if (chart.querySelector('#correlationChart')) {
+            const correlationChart = chart.querySelector('#correlationChart');
+            correlationChart.style.height = isMobile ? '280px' : '220px';
+        }
+        
+        // Optimize stream chart height
+        if (chart.querySelector('#streamChart')) {
+            const streamChart = chart.querySelector('#streamChart');
+            streamChart.style.height = isMobile ? '320px' : '350px';
+        }
+    });
+}
+
+// Add optimizeChartContainers function to dynamically set chart heights
+function optimizeChartContainers() {
+    // Make sure all chart containers have proper height on mobile
+    const isMobile = window.innerWidth < 480;
+    const charts = document.querySelectorAll('.chart-container');
+    
+    charts.forEach(chart => {
+        // Find the specific chart
+        if (chart.querySelector('#timeGapChart')) {
+            // Set appropriate height for the time gap chart
+            const timeGapChart = chart.querySelector('#timeGapChart');
+            timeGapChart.style.height = isMobile ? '300px' : '220px';
+        }
+        
+        // Optimize frequency chart height
+        if (chart.querySelector('#frequencyChart')) {
+            const frequencyChart = chart.querySelector('#frequencyChart');
+            frequencyChart.style.height = isMobile ? '280px' : '220px';
+        }
+        
+        // Optimize urgency chart height
+        if (chart.querySelector('#urgencyChart')) {
+            const urgencyChart = chart.querySelector('#urgencyChart');
+            urgencyChart.style.height = isMobile ? '280px' : '220px';
+        }
+        
+        // Optimize correlation chart height
+        if (chart.querySelector('#correlationChart')) {
+            const correlationChart = chart.querySelector('#correlationChart');
+            correlationChart.style.height = isMobile ? '280px' : '220px';
+        }
+        
+        // Optimize stream chart height
+        if (chart.querySelector('#streamChart')) {
+            const streamChart = chart.querySelector('#streamChart');
+            streamChart.style.height = isMobile ? '320px' : '350px';
         }
     });
 }
