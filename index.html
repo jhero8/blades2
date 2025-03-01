@@ -817,6 +817,7 @@
     font-size: 24px;
     border: none;
     cursor: pointer;
+    z-index: 99999;
     transition: transform 0.3s;
 }
 .fab:hover {
@@ -2824,7 +2825,7 @@ function calculateAverageTimeBetweenUrinations() {
     return avgTimeByDate;
 }
 
-// Render the time gap chart
+// Mobile-optimized Time Gap Chart function
 function renderTimeGapChart() {
     try {
         const canvas = document.getElementById('timeGapCanvas');
@@ -2850,7 +2851,18 @@ function renderTimeGapChart() {
         const ctx = canvas.getContext('2d');
         const width = canvas.width;
         const height = canvas.height;
-        const padding = { top: 30, right: 20, bottom: 40, left: 50 };
+        
+        // Detect if we're on a small screen (like mobile)
+        const isMobile = width < 400;
+        
+        // Adjust padding based on screen size
+        const padding = {
+            top: 30,
+            right: isMobile ? 10 : 20, 
+            // Increase bottom padding to prevent text overlap
+            bottom: isMobile ? 70 : 40,
+            left: isMobile ? 40 : 50
+        };
         
         const chartWidth = width - padding.left - padding.right;
         const chartHeight = height - padding.top - padding.bottom;
@@ -2860,27 +2872,37 @@ function renderTimeGapChart() {
         ctx.fillRect(0, 0, width, height);
         
         // Find the maximum average time for scaling
-        const maxAvgTime = Math.max(...timeData.map(([, time]) => time));
+        let maxAvgTime = Math.max(...timeData.map(([, time]) => time));
+        
+        // Ensure max time is at least 3 hours for scale visibility
+        maxAvgTime = Math.max(maxAvgTime, 180); // 3 hours = 180 minutes
         
         // Draw horizontal grid lines and y-axis
         ctx.strokeStyle = '#e2e8f0';
         ctx.lineWidth = 1;
         
-        for (let i = 0; i <= 5; i++) {
-            const y = padding.top + chartHeight - (i / 5) * chartHeight;
+        // Mobile-optimized grid lines - draw fewer on small screens
+        const gridLines = isMobile ? 4 : 6;
+        
+        for (let i = 0; i <= gridLines; i++) {
+            const y = padding.top + chartHeight - (i / gridLines) * chartHeight;
             ctx.beginPath();
             ctx.moveTo(padding.left, y);
             ctx.lineTo(width - padding.right, y);
             ctx.stroke();
             
             // Draw y-axis labels (convert minutes to hours and minutes)
-            const minutes = Math.round((i / 5) * maxAvgTime);
+            const minutes = Math.round((i / gridLines) * maxAvgTime);
             const hours = Math.floor(minutes / 60);
             const mins = minutes % 60;
-            const timeLabel = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+            // Mobile-optimized labels
+            const timeLabel = hours > 0 ? 
+                (isMobile ? `${hours}h ${mins > 0 ? mins + 'm' : ''}` : `${hours}h ${mins}m`) :
+                `${mins}m`;
             
             ctx.fillStyle = '#718096';
-            ctx.font = '10px sans-serif';
+            // Smaller font on mobile
+            ctx.font = isMobile ? '9px sans-serif' : '10px sans-serif';
             ctx.textAlign = 'right';
             ctx.textBaseline = 'middle';
             ctx.fillText(timeLabel, padding.left - 5, y);
@@ -2929,19 +2951,54 @@ function renderTimeGapChart() {
                 ctx.lineTo(x, y);
             }
             
-            // Draw x-axis labels
+            // Draw x-axis labels with mobile optimization
             ctx.fillStyle = '#718096';
-            ctx.font = '10px sans-serif';
+            // Smaller font on mobile
+            ctx.font = isMobile ? '9px sans-serif' : '10px sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
+            
+            // Format dates differently for mobile
+            let displayDate;
+            if (isMobile) {
+                // Show minimal date format on mobile ("25" instead of "Feb 25")
+                const dateParts = date.split('-');
+                const day = parseInt(dateParts[2]);
+                displayDate = `${day}`;
+            } else {
+                displayDate = formatDate(date);
+            }
+            
             ctx.save();
-            ctx.translate(x, height - padding.bottom + 5);
-            ctx.rotate(-Math.PI / 4);  // Rotate labels 45 degrees
-            ctx.fillText(formatDate(date), 0, 0);
+            // Position labels farther from axis on mobile
+            const labelY = height - padding.bottom + (isMobile ? 8 : 5);
+            ctx.translate(x, labelY);
+            // More rotation on mobile to prevent overlap
+            ctx.rotate(isMobile ? -Math.PI / 3 : -Math.PI / 4);
+            ctx.fillText(displayDate, 0, 0);
             ctx.restore();
         });
         
         ctx.stroke();
+        
+        // Add month labels for mobile displays
+        if (isMobile && timeData.length > 0) {
+            // Add month labels above the day numbers
+            timeData.forEach(([date], index) => {
+                const dateParts = date.split('-');
+                const monthIndex = parseInt(dateParts[1]) - 1; // 0-based month
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                
+                // Only show month for first day of month or first data point
+                if (index === 0 || dateParts[2] === '01') {
+                    const x = padding.left + index * pointWidth;
+                    ctx.fillStyle = '#a0aec0'; // Lighter color for month
+                    ctx.font = '8px sans-serif'; // Smaller than day
+                    ctx.textAlign = 'center';
+                    ctx.fillText(months[monthIndex], x, height - padding.bottom + 20);
+                }
+            });
+        }
         
         // Draw data points and values
         timeData.forEach(([date, avgTime], index) => {
@@ -2954,7 +3011,9 @@ function renderTimeGapChart() {
             pointGradient.addColorStop(1, '#4f9cf9');
             
             ctx.beginPath();
-            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            // Smaller points on mobile
+            const pointRadius = isMobile ? 5 : 6;
+            ctx.arc(x, y, pointRadius, 0, Math.PI * 2);
             ctx.fillStyle = pointGradient;
             ctx.fill();
             ctx.strokeStyle = 'white';
@@ -2964,14 +3023,18 @@ function renderTimeGapChart() {
             // Draw time value with nicer formatting
             const hours = Math.floor(avgTime / 60);
             const mins = Math.round(avgTime % 60);
-            const timeLabel = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+            
+            // Mobile-optimized time label
+            const timeLabel = isMobile ? 
+                `${hours}h ${mins > 0 ? mins + 'm' : ''}` :
+                `${hours}h ${mins}m`;
             
             // Draw with small shadow for better readability
             ctx.fillStyle = '#4a5568';
-            ctx.font = 'bold 10px sans-serif';
+            ctx.font = isMobile ? 'bold 9px sans-serif' : 'bold 10px sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
-            ctx.fillText(timeLabel, x, y - 10);
+            ctx.fillText(timeLabel, x, y - (isMobile ? 8 : 10));
         });
         
         // Highlight the "golden window" of 3-4 hours (180-240 minutes)
@@ -2984,8 +3047,8 @@ function renderTimeGapChart() {
             const goldenLowerY = padding.top + chartHeight - Math.min(goldenMinLower / maxAvgTime, 1) * chartHeight;
             const goldenUpperY = padding.top + chartHeight - Math.min(goldenMinUpper / maxAvgTime, 1) * chartHeight;
             
-            // Draw the golden window zone
-            ctx.fillStyle = 'rgba(249, 199, 79, 0.15)'; // Light gold color
+            // Draw the golden window zone with more transparency on mobile
+            ctx.fillStyle = isMobile ? 'rgba(249, 199, 79, 0.10)' : 'rgba(249, 199, 79, 0.15)';
             ctx.fillRect(padding.left, goldenUpperY, chartWidth, goldenLowerY - goldenUpperY);
             
             // Add a subtle border
@@ -3008,12 +3071,22 @@ function renderTimeGapChart() {
             // Reset line dash
             ctx.setLineDash([]);
             
-            // Label for golden window
+            // Label for golden window - position in upper part for mobile
             ctx.fillStyle = 'rgba(249, 151, 79, 0.8)';
-            ctx.font = 'bold 10px sans-serif';
+            ctx.font = isMobile ? 'bold 9px sans-serif' : 'bold 10px sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
-            ctx.fillText('Golden Window (3-4h)', padding.left + 5, (goldenUpperY + goldenLowerY) / 2);
+            
+            // Position label higher in the window on mobile
+            const labelY = isMobile ? 
+                (goldenUpperY + (goldenLowerY - goldenUpperY) * 0.3) : 
+                ((goldenUpperY + goldenLowerY) / 2);
+                
+            ctx.fillText(
+                isMobile ? 'Golden Window (3-4h)' : 'Golden Window (3-4h)',
+                padding.left + 5, 
+                labelY
+            );
         }
         
         // Calculate and draw trend line
@@ -3060,49 +3133,67 @@ function renderTimeGapChart() {
             if (slope > 0) {
                 // Time between urinations is increasing
                 if (latestAvgTime < goldenMinLower) {
-                    trendMessage = 'Trending toward golden window';
+                    trendMessage = isMobile ? 'Trending toward golden window' : 'Trending toward golden window';
                     trendColor = '#22c55e'; // Green (good)
                     trendIcon = '👍';
                 } else if (latestAvgTime > goldenMinUpper) {
-                    trendMessage = 'Trending away from golden window';
+                    trendMessage = isMobile ? 'Trending away from golden window' : 'Trending away from golden window';
                     trendColor = '#e53e3e'; // Red (bad)
                     trendIcon = '👎';
                 } else {
-                    trendMessage = 'Trending toward longer intervals';
+                    trendMessage = isMobile ? 'Trending toward longer intervals' : 'Trending toward longer intervals';
                     trendColor = '#eab308'; // Yellow (neutral)
                     trendIcon = '➡️';
                 }
             } else {
                 // Time between urinations is decreasing
                 if (latestAvgTime > goldenMinUpper) {
-                    trendMessage = 'Trending toward golden window';
+                    trendMessage = isMobile ? 'Trending toward golden window' : 'Trending toward golden window';
                     trendColor = '#22c55e'; // Green (good)
                     trendIcon = '👍';
                 } else if (latestAvgTime < goldenMinLower) {
-                    trendMessage = 'Trending away from golden window';
+                    trendMessage = isMobile ? 'Trending away from golden window' : 'Trending away from golden window';
                     trendColor = '#e53e3e'; // Red (bad)
                     trendIcon = '👎';
                 } else {
-                    trendMessage = 'Trending toward shorter intervals';
+                    trendMessage = isMobile ? 'Trending toward shorter intervals' : 'Trending toward shorter intervals';
                     trendColor = '#eab308'; // Yellow (neutral)
                     trendIcon = '➡️';
                 }
             }
             
-            // Draw trend message
+            // Draw trend message - Position HIGHER for mobile
             ctx.fillStyle = trendColor;
-            ctx.font = 'bold 12px sans-serif';
+            // Smaller font on mobile
+            ctx.font = isMobile ? 'bold 11px sans-serif' : 'bold 12px sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
-            ctx.fillText(`${trendIcon} ${trendMessage}`, width / 2, height - 28);
+            
+            // Draw message well ABOVE the x-axis labels on mobile
+            const messageY = height - padding.bottom + (isMobile ? 32 : 22);
+            
+            ctx.fillText(
+                `${trendIcon} ${trendMessage}`,
+                width / 2,
+                messageY
+            );
         }
         
-        // Draw a note about the data
+        // Draw a note about the data - MUCH lower on mobile
         ctx.fillStyle = '#718096';
-        ctx.font = 'italic 10px sans-serif';
+        // Smaller font on mobile
+        ctx.font = isMobile ? 'italic 8px sans-serif' : 'italic 10px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        ctx.fillText('* Excludes overnight gaps > 12 hours', width / 2, height - 12);
+        
+        // Position well below the trend message on mobile
+        const noteY = height - padding.bottom + (isMobile ? 48 : 42);
+        
+        ctx.fillText(
+            '* Excludes overnight gaps > 12 hours',
+            width / 2,
+            noteY
+        );
         
     } catch (error) {
         console.error('Error rendering time gap chart', error);
@@ -3112,6 +3203,26 @@ function renderTimeGapChart() {
         }
     }
 }
+
+// Additional helper function for chart height optimization
+function optimizeChartContainers() {
+    // Make sure all chart containers have proper height on mobile
+    const isMobile = window.innerWidth < 480;
+    const charts = document.querySelectorAll('.chart-container');
+    
+    charts.forEach(chart => {
+        // Find the specific chart
+        if (chart.querySelector('#timeGapChart')) {
+            // Set appropriate height for the time gap chart
+            const timeGapChart = chart.querySelector('#timeGapChart');
+            timeGapChart.style.height = isMobile ? '300px' : '220px';
+        }
+    });
+}
+
+// Call this function on page load and window resize
+window.addEventListener('load', optimizeChartContainers);
+window.addEventListener('resize', optimizeChartContainers);
     </script>
 </body>
 </html>
