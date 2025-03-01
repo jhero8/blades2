@@ -286,35 +286,87 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
 }
-        .entry-item {
-            padding: 16px;
-            border-bottom: 1px solid #e2e8f0;
-            animation: fadeInUp 0.3s ease;
-        }
+.entry-item {
+    padding: 12px 16px; /* Reduced from 16px all around */
+    border-bottom: 1px solid #e2e8f0;
+    animation: fadeInUp 0.3s ease;
+    transition: background-color 0.2s;
+    margin-top: 1px;
+    margin-bottom: 1px; /* Reduced from 4px */
+    border-radius: 4px;
+}
+
+.entry-item:hover {
+    background-color: #f7fafc;
+}
+
+.entry-time {
+    font-weight: 600;
+    line-height: 1.5;
+    padding-left: 0; /* Remove any left padding */
+    margin-left: 0; /* Remove any left margin */
+    color: #2d3748;
+    font-size: 15px; /* Increased from default */
+    display: flex;
+    align-items: center;
+}
+
+.urgency-0 {
+    color: #48bb78; /* Green */
+}
+.urgency-1 {
+    color: #4299e1; /* Blue */
+}
+.urgency-2 {
+    color: #ecc94b; /* Yellow */
+}
+.urgency-3 {
+    color: #f56565; /* Red */
+}
+
+.stream-strong {
+    color: #48bb78; /* Green */
+    font-weight: 600;
+}
+.stream-intermittent {
+    color: #ecc94b; /* Yellow */
+    font-weight: 600;
+}
+.stream-weak {
+    color: #f56565; /* Red */
+    font-weight: 600;
+}
         
         .entry-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             align-items: center;
         }
         
         .entry-date {
-            font-weight: 500;
-            color: #2d3748;
-        }
+    display: flex;
+    align-items: center;
+}
         
-        .entry-details {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 4px 8px;
-            font-size: 14px;
-            color: #4a5568;
-        }
+.entry-details {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px; /* Horizontal gap between label and value */
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 4px;
+}
         
-        .entry-label {
-            font-weight: 500;
-        }
+.entry-label {
+    font-weight: 600;
+    color: #718096;
+}
+
+.entry-label, .entry-details div {
+    display: flex;
+    align-items: center;
+}
         
         .no-entries {
             text-align: center;
@@ -715,36 +767,43 @@
 
 .entry-actions {
     display: flex;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
+    margin-left: auto; /* Push to right edge */
+    height: 32px; /* Fixed height to match entry time row */
 }
 
 .edit-icon, .delete-icon {
     cursor: pointer;
-    width: 20px;
-    height: 20px;
+    width: 28px; /* Increased from 20px */
+    height: 28px; /* Increased from 20px */
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
-    padding: 4px;
+    border-radius: 50%; /* Make circular */
+    transition: all 0.2s;
 }
 
 .edit-icon {
     color: #718096;
+    background-color: #edf2f7;
 }
 
 .edit-icon:hover {
-    background-color: #edf2f7;
+    background-color: #e2e8f0;
+    transform: scale(1.1);
 }
 
 .delete-icon {
     color: #e53e3e;
+    background-color: #fff5f5;
 }
 
 .delete-icon:hover {
     background-color: #fed7d7;
+    transform: scale(1.1);
 }
+
 .fab {
     position: fixed;
     bottom: 20px;
@@ -766,19 +825,35 @@
 
 /* Date separator styling */
 .date-separator {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    font-size: 14px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    font-size: 16px; /* Increased from 14px */
     font-weight: 600;
     color: #4a5568;
     border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 4px;
+    padding-bottom: 8px;
+    background-color: #f7fafc; /* Light background to make date stand out */
+    padding: 6px 10px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Set specific distance from date to first entry */
+.date-separator + .entry-item {
+    margin-top: 8px;
+}
+
+
+.date-separator::before {
+    /*content: "📅"; /* Calendar emoji adds visual indicator */
+    margin-right: 8px;
+    font-size: 16px;
 }
 
 /* Icon styling */
 .entry-icon {
-    margin-right: 8px;
-    font-size: 16px;
+    display: none;
 }
 
 /* Entry animation */
@@ -1267,7 +1342,7 @@ function deleteEntryAtIndex(index) {
         // Sort entries
         entries.sort((a, b) => (a.date + a.time < b.date + b.time ? 1 : -1));
 
-        const displayLimit = showAll ? entries.length : 7;
+        const displayLimit = showAll ? entries.length : 12;
         const displayEntries = entries.slice(0, displayLimit);
 
         let lastDate = '';
@@ -1276,7 +1351,11 @@ function deleteEntryAtIndex(index) {
             if (entry.date !== lastDate) {
                 const dateSeparator = document.createElement('div');
                 dateSeparator.className = 'date-separator';
-                dateSeparator.textContent = formatDate(entry.date);
+                
+                // Get correct day of week
+                const dayOfWeek = getDayOfWeek(entry.date);
+                
+                dateSeparator.textContent = `${formatDate(entry.date)} (${dayOfWeek})`;
                 entriesList.appendChild(dateSeparator);
                 lastDate = entry.date;
             }
@@ -1284,39 +1363,55 @@ function deleteEntryAtIndex(index) {
             const entryEl = document.createElement('div');
             entryEl.className = 'entry-item';
 
-            // Determine minimalist icon
-let icon = '';
-if (entry.drinkType) {
-    icon = '||'; // neutral drop for all drink types
-} else if (entry.urineVolume) {
-    icon = '○'; // simple circle indicating urine
-}
+            // Determine icon class based on entry type
+            let iconClass = '';
+            if (entry.drinkType) {
+                iconClass = 'drink-icon';
+            } else if (entry.urineVolume) {
+                iconClass = 'urine-icon';
+            }
+            
+            // Determine urgency class if applicable
+            let urgencyClass = '';
+            if (entry.urgency) {
+                urgencyClass = `urgency-${entry.urgency}`;
+            }
+            
+            // Get urgency text instead of number
+            const urgencyText = getUrgencyText(entry.urgency);
+            
+            // Determine stream class if applicable
+            let streamClass = '';
+            if (entry.urineStream) {
+                streamClass = `stream-${entry.urineStream.toLowerCase()}`;
+            }
 
-entryEl.innerHTML = `
-    <div class="entry-header">
-        <div class="entry-date">
-            <span class="entry-icon">${icon}</span>${entry.time}
-        </div>
-        <div class="entry-actions">
-            <div class="edit-icon" title="Edit" onclick="editEntryAtIndex(${entries.indexOf(entry)})">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                </svg>
-            </div>
-            <div class="delete-icon" title="Delete" onclick="confirmDeleteEntryAtIndex(${entries.indexOf(entry)})">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </div>
-        </div>
-    </div>
-    <div class="entry-details">
-        ${entry.drinkType ? `<div class="entry-label">Drink:</div><div>${entry.drinkType} (${entry.drinkAmount || 0} ml)</div>` : ''}
-        ${entry.urineVolume ? `<div class="entry-label">Urine:</div><div>${entry.urineVolume} sec (Urgency: ${entry.urgency || 'N/A'})</div>` : ''}
-        ${entry.urineStream ? `<div class="entry-label">Urine Flow:</div><div>${entry.urineStream}</div>` : ''}
-    </div>
-`;
+            entryEl.innerHTML = `
+                <div class="entry-header">
+                    <div class="entry-date">
+                        <span class="entry-icon ${iconClass}"></span>
+                        <span class="entry-time">${formatTime(entry.time)}</span>
+                    </div>
+                    <div class="entry-actions">
+                        <div class="edit-icon" title="Edit" onclick="editEntryAtIndex(${entries.indexOf(entry)})">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                            </svg>
+                        </div>
+                        <div class="delete-icon" title="Delete" onclick="confirmDeleteEntryAtIndex(${entries.indexOf(entry)})">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="entry-details">
+                    ${entry.drinkType ? `<div class="entry-label">Drink:</div><div>${entry.drinkType} (${entry.drinkAmount || 0} ml)</div>` : ''}
+                    ${entry.urineVolume ? `<div class="entry-label">Urine:</div><div>${entry.urineVolume} sec&nbsp;<span class="${urgencyClass}">(Urgency: ${urgencyText})</span></div>` : ''}
+                    ${entry.urineStream ? `<div class="entry-label">Urine Flow:</div><div class="${streamClass}">${entry.urineStream}</div>` : ''}
+                </div>
+            `;
 
             entriesList.appendChild(entryEl);
         });
@@ -1334,6 +1429,53 @@ entryEl.innerHTML = `
     }
 }
 
+function formatTime(timeString) {
+    try {
+        // Check if the time is in 24-hour format
+        if (timeString.includes(':')) {
+            const [hours, minutes] = timeString.split(':');
+            
+            // Convert to 12-hour format with AM/PM
+            let hour = parseInt(hours, 10);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            hour = hour % 12;
+            hour = hour ? hour : 12; // the hour '0' should be '12'
+            
+            return `${hour}:${minutes} ${ampm}`;
+        }
+        return timeString;
+    } catch (error) {
+        console.error('Error formatting time', error);
+        return timeString;
+    }
+}
+
+function getDayOfWeek(dateString) {
+    try {
+        const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
+        
+        // Create date object - months are 0-based in JavaScript 
+        const date = new Date(year, month - 1, day);
+        
+        // Get day of week
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        return dayNames[date.getDay()];
+    } catch (error) {
+        console.error('Error getting day of week', error);
+        return '';
+    }
+}
+
+function getUrgencyText(urgencyLevel) {
+    const urgencyMap = {
+        '0': 'None',
+        '1': 'Mild',
+        '2': 'Moderate',
+        '3': 'Severe'
+    };
+    
+    return urgencyMap[urgencyLevel] || 'N/A';
+}
 
 // Add this new function for editing entries
 function editEntryAtIndex(index) {
@@ -2203,8 +2345,8 @@ toggleExportBtn.addEventListener('click', function() {
             return a.time.localeCompare(b.time);
         });
 
-        // IMPROVED: Limit to the most recent 7 entries for better visibility
-        const recentEntries = streamEntries.slice(-7);
+        // IMPROVED: Limit to the most recent 12 entries for better visibility
+        const recentEntries = streamEntries.slice(-12);
 
         // Convert stream types to numeric values
         const streamValues = {
