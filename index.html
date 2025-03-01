@@ -771,6 +771,35 @@
     align-items: center;
     margin-left: auto; /* Push to right edge */
     height: 32px; /* Fixed height to match entry time row */
+    overflow: hidden; /* Hide overflowing content when collapsed */
+    transition: width 0.3s ease; /* Smooth width transition */
+    width: 28px; /* Start with just enough width for the toggle button */
+}
+
+.entry-actions.expanded {
+    width: 108px; /* Increased from 84px to properly fit all three buttons (28px each) plus gaps (12px each) */
+}
+
+.action-toggle {
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s, transform 0.3s;
+    background-color: #f7fafc;
+    color: #718096;
+    flex-shrink: 0; /* Don't allow this button to shrink */
+}
+
+.action-toggle:hover {
+    background-color: #edf2f7;
+}
+
+.action-toggle.expanded {
+    transform: rotate(180deg);
 }
 
 .edit-icon, .delete-icon {
@@ -781,7 +810,16 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%; /* Make circular */
-    transition: all 0.2s;
+    transition: all 0.2s, opacity 0.3s, transform 0.3s;
+    opacity: 0;
+    transform: translateX(10px);
+    flex-shrink: 0; /* Don't allow these buttons to shrink */
+}
+
+.entry-actions.expanded .edit-icon,
+.entry-actions.expanded .delete-icon {
+    opacity: 1;
+    transform: translateX(0);
 }
 
 .edit-icon {
@@ -1328,6 +1366,28 @@ function deleteEntryAtIndex(index) {
         // Make the delete function globally available
         window.deleteEntryAtIndex = deleteEntryAtIndex;
         
+        // Function to toggle entry action buttons
+        function toggleEntryActions(toggleButton) {
+            try {
+                // Get the parent entry-actions container
+                const actionsContainer = toggleButton.parentElement;
+                
+                // Toggle the expanded state
+                const isExpanded = actionsContainer.classList.toggle('expanded');
+                
+                // Toggle the button rotation
+                toggleButton.classList.toggle('expanded', isExpanded);
+                
+                // Update accessibility title
+                toggleButton.title = isExpanded ? "Hide actions" : "Show actions";
+            } catch (error) {
+                console.error('Error toggling entry actions', error);
+            }
+        }
+        
+        // Make the function globally available
+        window.toggleEntryActions = toggleEntryActions;
+        
         // Render entries list
         function renderEntries(showAll = false) {
     try {
@@ -1394,6 +1454,11 @@ function deleteEntryAtIndex(index) {
                         <span class="entry-time">${formatTime(entry.time)}</span>
                     </div>
                     <div class="entry-actions">
+                        <div class="action-toggle" title="Show actions" onclick="toggleEntryActions(this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </div>
                         <div class="edit-icon" title="Edit" onclick="editEntryAtIndex(${entries.indexOf(entry)})">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
@@ -2976,7 +3041,12 @@ function calculateAverageTimeBetweenUrinations() {
             // Calculate difference
             const diffMinutes = currMinutes - prevMinutes;
             
-            // Only count reasonable gaps (e.g., ignore overnight gaps)
+            // Only count reasonable gaps during waking hours
+            // We exclude gaps longer than 12 hours (720 minutes) as these are likely overnight
+            // sleep periods. Including these would skew the daytime frequency analysis.
+            // Most people sleep 7-9 hours, and any gaps of >12 hours almost certainly
+            // include sleep time. This exclusion gives a more accurate picture of
+            // daytime urination frequency, which is the primary clinical concern.
             if (diffMinutes > 0 && diffMinutes < 12 * 60) {  // Less than 12 hours
                 totalMinutes += diffMinutes;
                 gapCount++;
@@ -3346,7 +3416,7 @@ function renderTimeGapChart() {
             );
         }
         
-        // Draw a note about the data - MUCH lower on mobile
+        // Draw an improved note about the data with clearer explanation
         ctx.fillStyle = '#718096';
         // Smaller font on mobile
         ctx.font = isMobile ? 'italic 8px sans-serif' : 'italic 10px sans-serif';
@@ -3357,7 +3427,7 @@ function renderTimeGapChart() {
         const noteY = height - padding.bottom + (isMobile ? 48 : 42);
         
         ctx.fillText(
-            '* Excludes overnight gaps > 12 hours',
+            '* Only includes daytime gaps; excludes overnight sleep periods',
             width / 2,
             noteY
         );
