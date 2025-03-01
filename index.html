@@ -3124,7 +3124,6 @@ function renderTimeGapChart() {
         const padding = {
             top: 30,
             right: isMobile ? 10 : 20, 
-            // Increase bottom padding to prevent text overlap
             bottom: isMobile ? 70 : 40,
             left: isMobile ? 40 : 50
         };
@@ -3139,8 +3138,27 @@ function renderTimeGapChart() {
         // Find the maximum average time for scaling
         let maxAvgTime = Math.max(...timeData.map(([, time]) => time));
         
-        // Ensure max time is at least 3 hours for scale visibility
-        maxAvgTime = Math.max(maxAvgTime, 180); // 3 hours = 180 minutes
+        // Define golden window values
+        const goldenMinLower = 180; // 3 hours = 180 minutes
+        const goldenMinUpper = 240; // 4 hours = 240 minutes
+        
+        // IMPORTANT CHANGE: Always ensure the scale goes to at least 5 hours (300 minutes)
+        // This ensures the golden window (3-4h) plus some space above it is always visible
+        const minScaleValue = 300; // 5 hours for motivation
+        maxAvgTime = Math.max(maxAvgTime, minScaleValue);
+        
+        // If data has values below 45 minutes, we need to show them
+        // Otherwise start y-axis at 45 minutes to focus on the important range
+        let minDisplayValue = 0;
+        const minRecordedValue = Math.min(...timeData.map(([, time]) => time));
+        
+        // Only adjust min display value if no low values exist in data
+        if (minRecordedValue > 45) {
+            minDisplayValue = 45; // Start at 45 minutes if no lower values exist
+        }
+        
+        // Effective chart range (for calculating positions)
+        const effectiveRange = maxAvgTime - minDisplayValue;
         
         // Draw horizontal grid lines and y-axis
         ctx.strokeStyle = '#e2e8f0';
@@ -3150,14 +3168,18 @@ function renderTimeGapChart() {
         const gridLines = isMobile ? 4 : 6;
         
         for (let i = 0; i <= gridLines; i++) {
-            const y = padding.top + chartHeight - (i / gridLines) * chartHeight;
+            // Calculate actual minutes value for this grid line
+            const minutes = Math.round(minDisplayValue + (i / gridLines) * effectiveRange);
+            
+            // Calculate y position
+            const y = padding.top + chartHeight - ((minutes - minDisplayValue) / effectiveRange) * chartHeight;
+            
             ctx.beginPath();
             ctx.moveTo(padding.left, y);
             ctx.lineTo(width - padding.right, y);
             ctx.stroke();
             
             // Draw y-axis labels (convert minutes to hours and minutes)
-            const minutes = Math.round((i / gridLines) * maxAvgTime);
             const hours = Math.floor(minutes / 60);
             const mins = minutes % 60;
             // Mobile-optimized labels
@@ -3185,7 +3207,7 @@ function renderTimeGapChart() {
         ctx.beginPath();
         timeData.forEach(([date, avgTime], index) => {
             const x = padding.left + index * pointWidth;
-            const y = padding.top + chartHeight - (avgTime / maxAvgTime) * chartHeight;
+            const y = padding.top + chartHeight - ((avgTime - minDisplayValue) / effectiveRange) * chartHeight;
             
             if (index === 0) {
                 ctx.moveTo(x, y);
@@ -3208,7 +3230,7 @@ function renderTimeGapChart() {
         
         timeData.forEach(([date, avgTime], index) => {
             const x = padding.left + index * pointWidth;
-            const y = padding.top + chartHeight - (avgTime / maxAvgTime) * chartHeight;
+            const y = padding.top + chartHeight - ((avgTime - minDisplayValue) / effectiveRange) * chartHeight;
             
             if (index === 0) {
                 ctx.moveTo(x, y);
@@ -3268,7 +3290,7 @@ function renderTimeGapChart() {
         // Draw data points and values
         timeData.forEach(([date, avgTime], index) => {
             const x = padding.left + index * pointWidth;
-            const y = padding.top + chartHeight - (avgTime / maxAvgTime) * chartHeight;
+            const y = padding.top + chartHeight - ((avgTime - minDisplayValue) / effectiveRange) * chartHeight;
             
             // Draw point with gradient circle
             const pointGradient = ctx.createRadialGradient(x, y, 0, x, y, 6);
@@ -3302,57 +3324,51 @@ function renderTimeGapChart() {
             ctx.fillText(timeLabel, x, y - (isMobile ? 8 : 10));
         });
         
-        // Highlight the "golden window" of 3-4 hours (180-240 minutes)
-        const goldenMinLower = 180; // 3 hours in minutes
-        const goldenMinUpper = 240; // 4 hours in minutes
+        // Always show the golden window (3-4 hours or 180-240 minutes)
+        // Calculate y positions for the golden window using the new scaling
+        const goldenLowerY = padding.top + chartHeight - ((goldenMinLower - minDisplayValue) / effectiveRange) * chartHeight;
+        const goldenUpperY = padding.top + chartHeight - ((goldenMinUpper - minDisplayValue) / effectiveRange) * chartHeight;
         
-        // Only show golden window if it's within our data range
-        if (maxAvgTime > goldenMinLower) {
-            // Calculate y positions for the golden window
-            const goldenLowerY = padding.top + chartHeight - Math.min(goldenMinLower / maxAvgTime, 1) * chartHeight;
-            const goldenUpperY = padding.top + chartHeight - Math.min(goldenMinUpper / maxAvgTime, 1) * chartHeight;
+        // Draw the golden window zone with more transparency on mobile
+        ctx.fillStyle = isMobile ? 'rgba(249, 199, 79, 0.10)' : 'rgba(249, 199, 79, 0.15)';
+        ctx.fillRect(padding.left, goldenUpperY, chartWidth, goldenLowerY - goldenUpperY);
+        
+        // Add a subtle border
+        ctx.strokeStyle = 'rgba(249, 199, 79, 0.5)';
+        ctx.setLineDash([3, 3]);
+        ctx.lineWidth = 1;
+        
+        // Upper line
+        ctx.beginPath();
+        ctx.moveTo(padding.left, goldenUpperY);
+        ctx.lineTo(padding.left + chartWidth, goldenUpperY);
+        ctx.stroke();
+        
+        // Lower line
+        ctx.beginPath();
+        ctx.moveTo(padding.left, goldenLowerY);
+        ctx.lineTo(padding.left + chartWidth, goldenLowerY);
+        ctx.stroke();
+        
+        // Reset line dash
+        ctx.setLineDash([]);
+        
+        // Label for golden window - position in upper part for mobile
+        ctx.fillStyle = 'rgba(249, 151, 79, 0.8)';
+        ctx.font = isMobile ? 'bold 9px sans-serif' : 'bold 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        
+        // Position label higher in the window on mobile
+        const labelY = isMobile ? 
+            (goldenUpperY + (goldenLowerY - goldenUpperY) * 0.3) : 
+            ((goldenUpperY + goldenLowerY) / 2);
             
-            // Draw the golden window zone with more transparency on mobile
-            ctx.fillStyle = isMobile ? 'rgba(249, 199, 79, 0.10)' : 'rgba(249, 199, 79, 0.15)';
-            ctx.fillRect(padding.left, goldenUpperY, chartWidth, goldenLowerY - goldenUpperY);
-            
-            // Add a subtle border
-            ctx.strokeStyle = 'rgba(249, 199, 79, 0.5)';
-            ctx.setLineDash([3, 3]);
-            ctx.lineWidth = 1;
-            
-            // Upper line
-            ctx.beginPath();
-            ctx.moveTo(padding.left, goldenUpperY);
-            ctx.lineTo(padding.left + chartWidth, goldenUpperY);
-            ctx.stroke();
-            
-            // Lower line
-            ctx.beginPath();
-            ctx.moveTo(padding.left, goldenLowerY);
-            ctx.lineTo(padding.left + chartWidth, goldenLowerY);
-            ctx.stroke();
-            
-            // Reset line dash
-            ctx.setLineDash([]);
-            
-            // Label for golden window - position in upper part for mobile
-            ctx.fillStyle = 'rgba(249, 151, 79, 0.8)';
-            ctx.font = isMobile ? 'bold 9px sans-serif' : 'bold 10px sans-serif';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'middle';
-            
-            // Position label higher in the window on mobile
-            const labelY = isMobile ? 
-                (goldenUpperY + (goldenLowerY - goldenUpperY) * 0.3) : 
-                ((goldenUpperY + goldenLowerY) / 2);
-                
-            ctx.fillText(
-                isMobile ? 'Golden Window (3-4h)' : 'Golden Window (3-4h)',
-                padding.left + 5, 
-                labelY
-            );
-        }
+        ctx.fillText(
+            isMobile ? 'Golden Window (3-4h)' : 'Golden Window (3-4h)',
+            padding.left + 5, 
+            labelY
+        );
         
         // Calculate and draw trend line
         if (timeData.length >= 2) {
@@ -3372,10 +3388,10 @@ function renderTimeGapChart() {
             
             // Calculate start and end points for trend line
             const startX = padding.left;
-            const startY = padding.top + chartHeight - (intercept / maxAvgTime) * chartHeight;
+            const startY = padding.top + chartHeight - ((intercept - minDisplayValue) / effectiveRange) * chartHeight;
             
             const endX = padding.left + (timeData.length - 1) * pointWidth;
-            const endY = padding.top + chartHeight - ((intercept + slope * (timeData.length - 1)) / maxAvgTime) * chartHeight;
+            const endY = padding.top + chartHeight - ((intercept + slope * (timeData.length - 1) - minDisplayValue) / effectiveRange) * chartHeight;
             
             // Draw trend line
             ctx.beginPath();
@@ -3445,21 +3461,21 @@ function renderTimeGapChart() {
         }
         
         // Draw an improved note about the data with clearer explanation
-ctx.fillStyle = '#718096';
-// Smaller font on mobile
-ctx.font = isMobile ? 'italic 8px sans-serif' : 'italic 10px sans-serif';
-ctx.textAlign = 'center';
-ctx.textBaseline = 'top';
+        ctx.fillStyle = '#718096';
+        // Smaller font on mobile
+        ctx.font = isMobile ? 'italic 8px sans-serif' : 'italic 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
 
-// Position well below the trend message on mobile
-const noteY = height - padding.bottom + (isMobile ? 48 : 42);
+        // Position well below the trend message on mobile
+        const noteY = height - padding.bottom + (isMobile ? 48 : 42);
 
-ctx.fillText(
-    '* Only includes urinations between 7am and 11pm',
-    width / 2,
-    noteY
-);
-        
+        ctx.fillText(
+            '* Only includes urinations between 7am and 11pm',
+            width / 2,
+            noteY
+        );
+                
     } catch (error) {
         console.error('Error rendering time gap chart', error);
         const canvas = document.getElementById('timeGapCanvas');
