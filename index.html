@@ -759,7 +759,6 @@
     border: none;
     cursor: pointer;
     transition: transform 0.3s;
-    z-index: 9999;
 }
 .fab:hover {
     transform: scale(1.1);
@@ -955,6 +954,14 @@
                                 <h3 class="chart-title">Urgency Levels</h3>
                                 <div class="chart" id="urgencyChart">
                                     <canvas id="urgencyCanvas" class="canvas-container"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Average Time Between Urinations chart -->
+                            <div class="chart-container">
+                                <h3 class="chart-title">Average Time Between Urinations</h3>
+                                <div class="chart" id="timeGapChart">
+                                    <canvas id="timeGapCanvas" class="canvas-container"></canvas>
                                 </div>
                             </div>
                             
@@ -1723,28 +1730,29 @@ toggleExportBtn.addEventListener('click', function() {
         
         // Dashboard-related functions
         function renderDashboard() {
-            try {
-                // Check if we have any data
-                if (entries.length === 0) {
-                    noDataMsg.style.display = 'block';
-                    dashboardCharts.classList.add('hidden');
-                    return;
-                }
-
-                // We have data, show the charts
-                noDataMsg.style.display = 'none';
-                dashboardCharts.classList.remove('hidden');
-
-                // Render each chart
-                renderFrequencyChart();
-                renderUrgencyChart();
-                renderCorrelationChart();
-                renderStreamChart();
-            } catch (error) {
-                console.error('Error rendering dashboard', error);
-                showMessage('Error displaying dashboard');
-            }
+    try {
+        // Check if we have any data
+        if (entries.length === 0) {
+            noDataMsg.style.display = 'block';
+            dashboardCharts.classList.add('hidden');
+            return;
         }
+
+        // We have data, show the charts
+        noDataMsg.style.display = 'none';
+        dashboardCharts.classList.remove('hidden');
+
+        // Render each chart
+        renderFrequencyChart();
+        renderUrgencyChart();
+        renderTimeGapChart(); // Add this line to render the new chart
+        renderCorrelationChart();
+        renderStreamChart();
+    } catch (error) {
+        console.error('Error rendering dashboard', error);
+        showMessage('Error displaying dashboard');
+    }
+}
 
         // IMPROVED: Canvas-based charts
         function renderFrequencyChart() {
@@ -2400,12 +2408,12 @@ toggleExportBtn.addEventListener('click', function() {
             });
 
             // Simple trend calculation
-            if (dataPoints.length >= 3) {
-                const firstThree = dataPoints.slice(0, Math.min(3, dataPoints.length));
-                const lastThree = dataPoints.slice(-Math.min(3, dataPoints.length));
+            if (dataPoints.length >= 2) {
+                const firstPoint = [dataPoints[0]];  // Take just the first point
+                const lastPoint = [dataPoints[dataPoints.length - 1]];  // Take just the last point
 
-                const firstAvg = firstThree.reduce((sum, p) => sum + p.value, 0) / firstThree.length;
-                const lastAvg = lastThree.reduce((sum, p) => sum + p.value, 0) / lastThree.length;
+                const firstAvg = firstPoint[0].value;  // Direct value of first point
+                const lastAvg = lastPoint[0].value;    // Direct value of last point
 
                 let trendDirection, trendColor, trendEmoji;
                 if (lastAvg > firstAvg + 0.3) {
@@ -2426,7 +2434,7 @@ toggleExportBtn.addEventListener('click', function() {
                 ctx.beginPath();
                 ctx.strokeStyle = trendColor;
                 ctx.setLineDash([5, 3]);
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2.5;
 
                 const firstX = layout.chart.left;
                 // IMPROVED: Use adjusted level height calculation
@@ -2614,6 +2622,353 @@ function loadSampleData() {
     
     // Render entries to display
     renderEntries();
+}
+
+// Calculate average time between urinations per day
+function calculateAverageTimeBetweenUrinations() {
+    // Group urination entries by date
+    const urinationsByDate = {};
+    
+    entries.forEach(entry => {
+        if (entry.urineVolume) {  // Check if it's a urination entry
+            if (!urinationsByDate[entry.date]) {
+                urinationsByDate[entry.date] = [];
+            }
+            // Store the time of urination
+            urinationsByDate[entry.date].push(entry.time);
+        }
+    });
+    
+    // Calculate average time between urinations for each date
+    const avgTimeByDate = {};
+    
+    Object.entries(urinationsByDate).forEach(([date, times]) => {
+        if (times.length <= 1) {
+            // Need at least 2 urinations to calculate gap
+            return;
+        }
+        
+        // Sort times chronologically
+        times.sort();
+        
+        // Calculate time differences in minutes
+        let totalMinutes = 0;
+        let gapCount = 0;
+        
+        for (let i = 1; i < times.length; i++) {
+            const prevTime = times[i-1];
+            const currTime = times[i];
+            
+            // Convert times to minutes since midnight
+            const prevMinutes = (parseInt(prevTime.split(':')[0]) * 60) + parseInt(prevTime.split(':')[1]);
+            const currMinutes = (parseInt(currTime.split(':')[0]) * 60) + parseInt(currTime.split(':')[1]);
+            
+            // Calculate difference
+            const diffMinutes = currMinutes - prevMinutes;
+            
+            // Only count reasonable gaps (e.g., ignore overnight gaps)
+            if (diffMinutes > 0 && diffMinutes < 12 * 60) {  // Less than 12 hours
+                totalMinutes += diffMinutes;
+                gapCount++;
+            }
+        }
+        
+        // Calculate average if we have valid gaps
+        if (gapCount > 0) {
+            avgTimeByDate[date] = Math.round(totalMinutes / gapCount);
+        }
+    });
+    
+    return avgTimeByDate;
+}
+
+// Render the time gap chart
+function renderTimeGapChart() {
+    try {
+        const canvas = document.getElementById('timeGapCanvas');
+        if (!canvas) return;
+        
+        setCanvasDimensions(canvas);
+        clearCanvas(canvas);
+        
+        // Get average time between urinations by date
+        const avgTimeByDate = calculateAverageTimeBetweenUrinations();
+        
+        // If we don't have data, show empty state
+        if (Object.keys(avgTimeByDate).length === 0) {
+            drawEmptyState(canvas, 'Not enough urination data to calculate time gaps');
+            return;
+        }
+        
+        // Convert to array and sort by date
+        const timeData = Object.entries(avgTimeByDate)
+            .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+            .slice(-7);  // Show last 7 days with data
+        
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = { top: 30, right: 20, bottom: 40, left: 50 };
+        
+        const chartWidth = width - padding.left - padding.right;
+        const chartHeight = height - padding.top - padding.bottom;
+        
+        // Draw background
+        ctx.fillStyle = '#f8f9fa';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Find the maximum average time for scaling
+        const maxAvgTime = Math.max(...timeData.map(([, time]) => time));
+        
+        // Draw horizontal grid lines and y-axis
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1;
+        
+        for (let i = 0; i <= 5; i++) {
+            const y = padding.top + chartHeight - (i / 5) * chartHeight;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(width - padding.right, y);
+            ctx.stroke();
+            
+            // Draw y-axis labels (convert minutes to hours and minutes)
+            const minutes = Math.round((i / 5) * maxAvgTime);
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            const timeLabel = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+            
+            ctx.fillStyle = '#718096';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(timeLabel, padding.left - 5, y);
+        }
+        
+        // Create gradient for area under the line
+        const gradient = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
+        gradient.addColorStop(0, 'rgba(166, 81, 230, 0.2)'); // Similar to app's purple color
+        gradient.addColorStop(1, 'rgba(166, 81, 230, 0.0)');
+        
+        // Calculate point width for data plotting
+        const pointWidth = chartWidth / (timeData.length > 1 ? timeData.length - 1 : 1);
+        
+        // Draw area under the line
+        ctx.beginPath();
+        timeData.forEach(([date, avgTime], index) => {
+            const x = padding.left + index * pointWidth;
+            const y = padding.top + chartHeight - (avgTime / maxAvgTime) * chartHeight;
+            
+            if (index === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+        
+        // Complete the area path
+        ctx.lineTo(padding.left + (timeData.length - 1) * pointWidth, height - padding.bottom);
+        ctx.lineTo(padding.left, height - padding.bottom);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // Draw the line
+        ctx.beginPath();
+        ctx.strokeStyle = '#a651e6'; // Using the app's purple color
+        ctx.lineWidth = 2.5;
+        
+        timeData.forEach(([date, avgTime], index) => {
+            const x = padding.left + index * pointWidth;
+            const y = padding.top + chartHeight - (avgTime / maxAvgTime) * chartHeight;
+            
+            if (index === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+            
+            // Draw x-axis labels
+            ctx.fillStyle = '#718096';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.save();
+            ctx.translate(x, height - padding.bottom + 5);
+            ctx.rotate(-Math.PI / 4);  // Rotate labels 45 degrees
+            ctx.fillText(formatDate(date), 0, 0);
+            ctx.restore();
+        });
+        
+        ctx.stroke();
+        
+        // Draw data points and values
+        timeData.forEach(([date, avgTime], index) => {
+            const x = padding.left + index * pointWidth;
+            const y = padding.top + chartHeight - (avgTime / maxAvgTime) * chartHeight;
+            
+            // Draw point with gradient circle
+            const pointGradient = ctx.createRadialGradient(x, y, 0, x, y, 6);
+            pointGradient.addColorStop(0, '#a651e6');
+            pointGradient.addColorStop(1, '#4f9cf9');
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = pointGradient;
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw time value with nicer formatting
+            const hours = Math.floor(avgTime / 60);
+            const mins = Math.round(avgTime % 60);
+            const timeLabel = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+            
+            // Draw with small shadow for better readability
+            ctx.fillStyle = '#4a5568';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(timeLabel, x, y - 10);
+        });
+        
+        // Highlight the "golden window" of 3-4 hours (180-240 minutes)
+        const goldenMinLower = 180; // 3 hours in minutes
+        const goldenMinUpper = 240; // 4 hours in minutes
+        
+        // Only show golden window if it's within our data range
+        if (maxAvgTime > goldenMinLower) {
+            // Calculate y positions for the golden window
+            const goldenLowerY = padding.top + chartHeight - Math.min(goldenMinLower / maxAvgTime, 1) * chartHeight;
+            const goldenUpperY = padding.top + chartHeight - Math.min(goldenMinUpper / maxAvgTime, 1) * chartHeight;
+            
+            // Draw the golden window zone
+            ctx.fillStyle = 'rgba(249, 199, 79, 0.15)'; // Light gold color
+            ctx.fillRect(padding.left, goldenUpperY, chartWidth, goldenLowerY - goldenUpperY);
+            
+            // Add a subtle border
+            ctx.strokeStyle = 'rgba(249, 199, 79, 0.5)';
+            ctx.setLineDash([3, 3]);
+            ctx.lineWidth = 1;
+            
+            // Upper line
+            ctx.beginPath();
+            ctx.moveTo(padding.left, goldenUpperY);
+            ctx.lineTo(padding.left + chartWidth, goldenUpperY);
+            ctx.stroke();
+            
+            // Lower line
+            ctx.beginPath();
+            ctx.moveTo(padding.left, goldenLowerY);
+            ctx.lineTo(padding.left + chartWidth, goldenLowerY);
+            ctx.stroke();
+            
+            // Reset line dash
+            ctx.setLineDash([]);
+            
+            // Label for golden window
+            ctx.fillStyle = 'rgba(249, 151, 79, 0.8)';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Golden Window (3-4h)', padding.left + 5, (goldenUpperY + goldenLowerY) / 2);
+        }
+        
+        // Calculate and draw trend line
+        if (timeData.length >= 2) {
+            // Simple linear regression
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            const n = timeData.length;
+            
+            timeData.forEach(([, avgTime], index) => {
+                sumX += index;
+                sumY += avgTime;
+                sumXY += index * avgTime;
+                sumXX += index * index;
+            });
+            
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            
+            // Calculate start and end points for trend line
+            const startX = padding.left;
+            const startY = padding.top + chartHeight - (intercept / maxAvgTime) * chartHeight;
+            
+            const endX = padding.left + (timeData.length - 1) * pointWidth;
+            const endY = padding.top + chartHeight - ((intercept + slope * (timeData.length - 1)) / maxAvgTime) * chartHeight;
+            
+            // Draw trend line
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = slope > 0 ? '#22c55e' : '#e53e3e'; // Green if increasing, red if decreasing
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 3]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Determine trend direction relative to golden window
+            let trendMessage = '';
+            let trendColor = '';
+            let trendIcon = '';
+            
+            // Get the latest average time
+            const latestAvgTime = timeData[timeData.length - 1][1];
+            
+            if (slope > 0) {
+                // Time between urinations is increasing
+                if (latestAvgTime < goldenMinLower) {
+                    trendMessage = 'Trending toward golden window';
+                    trendColor = '#22c55e'; // Green (good)
+                    trendIcon = '👍';
+                } else if (latestAvgTime > goldenMinUpper) {
+                    trendMessage = 'Trending away from golden window';
+                    trendColor = '#e53e3e'; // Red (bad)
+                    trendIcon = '👎';
+                } else {
+                    trendMessage = 'Trending toward longer intervals';
+                    trendColor = '#eab308'; // Yellow (neutral)
+                    trendIcon = '➡️';
+                }
+            } else {
+                // Time between urinations is decreasing
+                if (latestAvgTime > goldenMinUpper) {
+                    trendMessage = 'Trending toward golden window';
+                    trendColor = '#22c55e'; // Green (good)
+                    trendIcon = '👍';
+                } else if (latestAvgTime < goldenMinLower) {
+                    trendMessage = 'Trending away from golden window';
+                    trendColor = '#e53e3e'; // Red (bad)
+                    trendIcon = '👎';
+                } else {
+                    trendMessage = 'Trending toward shorter intervals';
+                    trendColor = '#eab308'; // Yellow (neutral)
+                    trendIcon = '➡️';
+                }
+            }
+            
+            // Draw trend message
+            ctx.fillStyle = trendColor;
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(`${trendIcon} ${trendMessage}`, width / 2, height - 28);
+        }
+        
+        // Draw a note about the data
+        ctx.fillStyle = '#718096';
+        ctx.font = 'italic 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText('* Excludes overnight gaps > 12 hours', width / 2, height - 12);
+        
+    } catch (error) {
+        console.error('Error rendering time gap chart', error);
+        const canvas = document.getElementById('timeGapCanvas');
+        if (canvas) {
+            drawEmptyState(canvas, 'Could not generate chart');
+        }
+    }
 }
     </script>
 </body>
