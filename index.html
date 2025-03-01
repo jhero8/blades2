@@ -3006,9 +3006,9 @@ function calculateAverageTimeBetweenUrinations() {
     
     entries.forEach(entry => {
         if (entry.urineVolume) {  // Check if it's a urination entry
-            // Only consider entries between 8am and 11pm
+            // Only consider entries between 7am and 11pm
             const hour = parseInt(entry.time.split(':')[0]);
-            if (hour >= 8 && hour <= 23) {
+            if (hour >= 7 && hour <= 23) {
                 if (!urinationsByDate[entry.date]) {
                     urinationsByDate[entry.date] = [];
                 }
@@ -3426,7 +3426,7 @@ ctx.textBaseline = 'top';
 const noteY = height - padding.bottom + (isMobile ? 48 : 42);
 
 ctx.fillText(
-    '* Only includes urinations between 8am and 11pm',
+    '* Only includes urinations between 7am and 11pm',
     width / 2,
     noteY
 );
