@@ -914,6 +914,504 @@
     animation: entryDeleted 0.5s ease forwards;
 }
 
+/* Motivational section styles */
+.motivational-section {
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #f6f8fa, #edf2f7);
+    border-left: 4px solid #5a67d8;
+    overflow: hidden;
+}
+
+.motivational-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(203, 213, 224, 0.5);
+}
+
+.motivational-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    color: #4a5568;
+}
+
+.insight-refresh-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #718096;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.insight-refresh-btn:hover {
+    background-color: rgba(203, 213, 224, 0.4);
+    color: #4a5568;
+}
+
+.insight-refresh-btn svg {
+    transition: transform 0.5s ease;
+}
+
+.insight-refresh-btn:active svg {
+    transform: rotate(360deg);
+}
+
+.motivational-content {
+    padding: 16px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #2d3748;
+    position: relative;
+    min-height: 80px;
+}
+
+.motivational-content p {
+    margin: 0;
+}
+
+.motivational-footer {
+    padding: 8px 16px;
+    border-top: 1px solid rgba(203, 213, 224, 0.5);
+}
+
+.toggle-ai-settings {
+    background: none;
+    border: none;
+    color: #718096;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.toggle-ai-settings:hover {
+    color: #4a5568;
+    text-decoration: underline;
+}
+
+.ai-settings-panel {
+    padding-top: 12px;
+    transition: all 0.3s;
+}
+
+.ai-settings-panel.hidden {
+    max-height: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.ai-settings-helper {
+    display: block;
+    font-size: 12px;
+    color: #718096;
+    margin-top: 4px;
+}
+
+.insight-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 10;
+}
+
+.insight-loading p {
+    margin-top: 8px;
+    color: #4a5568;
+}
+
+.insight-loading-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #5a67d8;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.insight-highlight {
+    font-weight: 600;
+    color: #5a67d8;
+}
+
+.insight-warning {
+    font-weight: 600;
+    color: #e53e3e;
+}
+
+.insight-success {
+    font-weight: 600;
+    color: #38a169;
+}
+
+/* Magical insight transition styles */
+@keyframes subtlePulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+@keyframes gentleFadeIn {
+    0% { opacity: 0; transform: translateY(5px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes subtleGlow {
+    0% { box-shadow: 0 0 0 rgba(90, 103, 216, 0); }
+    50% { box-shadow: 0 0 10px rgba(90, 103, 216, 0.2); }
+    100% { box-shadow: 0 0 0 rgba(90, 103, 216, 0); }
+}
+
+.insight-refreshing {
+    animation: subtlePulse 1.5s infinite ease-in-out;
+}
+
+.insight-glow {
+    animation: subtleGlow 2s ease-in-out;
+}
+
+.insight-appear {
+    animation: gentleFadeIn 0.8s ease-out forwards;
+}
+
+/* Magical gradient background for new insights */
+.insight-new {
+    background: linear-gradient(to right, rgba(247, 250, 252, 0.5), rgba(237, 242, 247, 0.8), rgba(247, 250, 252, 0.5));
+    background-size: 200% 100%;
+    animation: gradientShift 3s ease forwards;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 100% 0; }
+    100% { background-position: 0 0; }
+}
+/* Streaming text and improved UI styles */
+@keyframes subtlePulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+@keyframes gentleFadeIn {
+    0% { opacity: 0; transform: translateY(5px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes subtleGlow {
+    0% { box-shadow: 0 0 0 rgba(90, 103, 216, 0); }
+    50% { box-shadow: 0 0 10px rgba(90, 103, 216, 0.2); }
+    100% { box-shadow: 0 0 0 rgba(90, 103, 216, 0); }
+}
+
+@keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.streaming-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 16px;
+    background-color: #5a67d8;
+    vertical-align: middle;
+    margin-left: 1px;
+    animation: cursorBlink 0.8s infinite;
+}
+
+.insight-refreshing {
+    animation: subtlePulse 1.5s infinite ease-in-out;
+}
+
+.insight-glow {
+    animation: subtleGlow 2s ease-in-out;
+}
+
+.insight-appear {
+    animation: gentleFadeIn 0.8s ease-out forwards;
+}
+
+/* AI controls dropdown styling */
+.ai-controls {
+    position: relative;
+    display: inline-block;
+}
+
+.ai-controls-toggle {
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s, transform 0.3s;
+    background-color: #f7fafc;
+    color: #718096;
+}
+
+.ai-controls-toggle:hover {
+    background-color: #edf2f7;
+}
+
+.ai-controls-toggle.expanded {
+    transform: rotate(180deg);
+}
+
+.ai-controls-menu {
+    position: absolute;
+    top: 36px;
+    right: 0;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 8px;
+    width: 150px;
+    z-index: 10;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.ai-controls-menu.expanded {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+.ai-controls-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #4a5568;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.ai-controls-item:hover {
+    background-color: #f7fafc;
+}
+
+.ai-controls-item svg {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+}
+
+.motivational-header {
+    position: relative;
+}
+
+/* Subtle fade-in animation styles */
+@keyframes subtlePulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+@keyframes subtleGlow {
+    0% { box-shadow: 0 0 0 rgba(90, 103, 216, 0); }
+    50% { box-shadow: 0 0 10px rgba(90, 103, 216, 0.2); }
+    100% { box-shadow: 0 0 0 rgba(90, 103, 216, 0); }
+}
+
+@keyframes wordFadeIn {
+    0% { opacity: 0; transform: translateY(3px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.insight-refreshing {
+    animation: subtlePulse 1.5s infinite ease-in-out;
+}
+
+.insight-glow {
+    animation: subtleGlow 2s ease-in-out;
+}
+
+.fade-in-word {
+    opacity: 0;
+    display: inline-block;
+    animation: wordFadeIn 0.6s ease-out forwards;
+}
+
+#insightMessage {
+    word-wrap: break-word;
+    white-space: normal;
+    line-height: 1.6;
+}
+
+/* AI controls dropdown styling */
+.ai-controls {
+    position: relative;
+    display: inline-block;
+}
+
+.ai-controls-toggle {
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s, transform 0.3s;
+    background-color: #f7fafc;
+    color: #718096;
+}
+
+.ai-controls-toggle:hover {
+    background-color: #edf2f7;
+}
+
+.ai-controls-toggle.expanded {
+    transform: rotate(180deg);
+}
+
+.ai-controls-menu {
+    position: absolute;
+    top: 36px;
+    right: 0;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 8px;
+    width: 150px;
+    z-index: 10;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.ai-controls-menu.expanded {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+.ai-controls-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #4a5568;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.ai-controls-item:hover {
+    background-color: #f7fafc;
+}
+
+.ai-controls-item svg {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+}
+
+.motivational-header {
+    position: relative;
+}
+
+
+
+
+/* AI controls dropdown styling */
+.ai-controls {
+    position: relative;
+    display: inline-block;
+}
+
+.ai-controls-toggle {
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s, transform 0.3s;
+    background-color: #f7fafc;
+    color: #718096;
+}
+
+.ai-controls-toggle:hover {
+    background-color: #edf2f7;
+}
+
+.ai-controls-toggle.expanded {
+    transform: rotate(180deg);
+}
+
+.ai-controls-menu {
+    position: absolute;
+    top: 36px;
+    right: 0;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 8px;
+    width: 180px;
+    z-index: 10;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.ai-controls-menu.expanded {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+.ai-controls-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #4a5568;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.ai-controls-item:hover {
+    background-color: #f7fafc;
+}
+
+.ai-controls-item svg {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+}
+
+#motivationalContent {
+    overflow: hidden; /* Prevents content overflow during animation */
+    transition: height 0.3s ease; /* Animates height changes over 0.3 seconds */
+}
 
     </style>
 </head>
@@ -949,6 +1447,57 @@
         <div id="storageWarning" class="storage-warning">
             Storage is not working properly. Your entries won't be saved between sessions.
         </div>
+        
+        <!-- New motivational section with chevron dropdown -->
+<div id="motivationalSection" class="card motivational-section">
+    <div class="motivational-header">
+        <h3 class="motivational-title">Daily Insight</h3>
+        <div class="ai-controls">
+            <div id="aiControlsToggle" class="ai-controls-toggle" title="AI Controls">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </div>
+            <div id="aiControlsMenu" class="ai-controls-menu">
+                <div id="refreshInsightBtn" class="ai-controls-item" title="Refresh insight">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                    </svg>
+                    <span>Refresh Insight</span>
+                </div>
+                <div id="toggleAiSettings" class="ai-controls-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>AI Settings</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="motivationalContent" class="motivational-content">
+        <div id="loadingMessage" class="insight-loading hidden">
+            <div class="insight-loading-spinner"></div>
+            <p>Generating insight...</p>
+        </div>
+        <p id="insightMessage">Welcome to your Bladder Diary. Track your entries to receive personalized insights.</p>
+    </div>
+    <div class="motivational-footer">
+        <div id="aiSettingsPanel" class="ai-settings-panel hidden">
+            <div class="form-group">
+                <label class="form-label" for="openaiKey">OpenAI API Key (stored locally only)</label>
+                <input type="password" id="openaiKey" class="form-control" placeholder="sk-...">
+                <small class="ai-settings-helper">Your key is stored securely in your browser only.</small>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="useOpenAI" class="form-check-input">
+                <label class="form-check-label" for="useOpenAI">Use AI-generated insights</label>
+            </div>
+            <button id="saveAiSettings" class="btn btn-secondary">Save Settings</button>
+        </div>
+    </div>
+</div>
         
         <button id="toggleFormBtn" class="btn btn-primary">
             Add New Entry
@@ -1583,7 +2132,7 @@ function editEntryAtIndex(index) {
 }
 
         // Add this to the export section to enable downloading a JSON backup file
-        function addBackupButtons() {
+function addBackupButtons() {
     const exportSection = document.querySelector('.export-section');
     
     // Create button container with better spacing
@@ -1682,8 +2231,8 @@ function editEntryAtIndex(index) {
                 
                 if (Array.isArray(importedData) && importedData.length > 0) {
                     // Check if the data has the expected structure
-                    const isValid = importedData.every(entry => 
-                        typeof entry === 'object' && 
+                    const isValid = importedData.every(entry =>
+                        typeof entry === 'object' &&
                         (entry.date || entry.time || entry.drinkType || entry.urineVolume)
                     );
                     
@@ -1744,8 +2293,7 @@ function editEntryAtIndex(index) {
 }
 
 
-        
-        // Handle form submission
+// Handle form submission
 entryForm.addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -2983,6 +3531,670 @@ function addLogoRefreshFunctionality() {
                 exportArea.select();
             }, 100);
         });
+
+
+// IMPROVED: Add focus and select handler for export text
+exportArea.addEventListener('blur', function() {
+    setTimeout(() => {
+        exportArea.focus();
+        exportArea.select();
+    }, 100);
+});
+
+// Motivational insights functionality
+const motivationalSection = document.getElementById('motivationalSection');
+const insightMessage = document.getElementById('insightMessage');
+const refreshInsightBtn = document.getElementById('refreshInsightBtn');
+const toggleAiSettings = document.getElementById('toggleAiSettings');
+const aiSettingsPanel = document.getElementById('aiSettingsPanel');
+const openaiKeyInput = document.getElementById('openaiKey');
+const useOpenAICheckbox = document.getElementById('useOpenAI');
+const saveAiSettingsBtn = document.getElementById('saveAiSettings');
+const loadingMessage = document.getElementById('loadingMessage');
+
+// Store last generated time to avoid excessive regeneration
+let lastInsightTime = null;
+let lastInsightType = null;
+
+// AI settings management
+function loadAiSettings() {
+    if (localStorageAvailable) {
+        const storedSettings = localStorage.getItem('bladderDiaryAiSettings');
+        if (storedSettings) {
+            try {
+                const settings = JSON.parse(storedSettings);
+                openaiKeyInput.value = settings.openaiKey || '';
+                useOpenAICheckbox.checked = settings.useOpenAI || false;
+            } catch (e) {
+                console.error('Error loading AI settings:', e);
+            }
+        }
+    }
+}
+
+function saveAiSettings() {
+    if (localStorageAvailable) {
+        const settings = {
+            openaiKey: openaiKeyInput.value.trim(),
+            useOpenAI: useOpenAICheckbox.checked
+        };
+        
+        try {
+            localStorage.setItem('bladderDiaryAiSettings', JSON.stringify(settings));
+            showMessage('AI settings saved', 'success');
+        } catch (e) {
+            console.error('Error saving AI settings:', e);
+            showMessage('Error saving settings', 'danger');
+        }
+    }
+}
+
+// Toggle AI settings panel
+toggleAiSettings.addEventListener('click', function() {
+    aiSettingsPanel.classList.toggle('hidden');
+    
+    if (!aiSettingsPanel.classList.contains('hidden')) {
+        // Load current settings when panel is shown
+        loadAiSettings();
+    }
+});
+
+// Save AI settings
+saveAiSettingsBtn.addEventListener('click', function() {
+    saveAiSettings();
+    aiSettingsPanel.classList.add('hidden');
+    // Generate new insight after saving settings
+    generateInsight(true);
+});
+
+// Refresh insight manually
+refreshInsightBtn.addEventListener('click', function() {
+    generateInsight(true);
+    
+    // Add rotation animation
+    refreshInsightBtn.querySelector('svg').style.transition = 'transform 0.5s ease';
+    refreshInsightBtn.querySelector('svg').style.transform = 'rotate(360deg)';
+    
+    // Reset animation after it completes
+    setTimeout(() => {
+        refreshInsightBtn.querySelector('svg').style.transition = '';
+        refreshInsightBtn.querySelector('svg').style.transform = '';
+    }, 500);
+});
+
+// Determine time-based message type
+function getInsightType() {
+    const now = new Date();
+    const hour = now.getHours();
+    
+    if (hour >= 5 && hour < 9) return 'morning';
+    if (hour >= 9 && hour < 12) return 'midMorning';
+    if (hour >= 12 && hour < 15) return 'afternoon';
+    if (hour >= 15 && hour < 18) return 'lateAfternoon';
+    if (hour >= 18 && hour < 21) return 'evening';
+    if (hour >= 21 && hour < 23) return 'night';
+    return 'lateNight';
+}
+
+// Generate insight message based on time and data
+// Generate insight message based on time and data
+function generateInsight(forceRefresh = false) {
+    try {
+        const currentType = getInsightType();
+        const currentTime = new Date().getTime();
+        const nowFormatted = new Date().toLocaleDateString('en-US', {
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+        });
+        
+        // Only regenerate if:
+        // 1. We're forcing a refresh, or
+        // 2. It's been at least 1 hour since last generation, or
+        // 3. The message type has changed
+        const timeDiff = lastInsightTime ? (currentTime - lastInsightTime) / (1000 * 60 * 60) : 24;
+        
+        if (!forceRefresh && lastInsightTime && timeDiff < 1 && currentType === lastInsightType) {
+            // Don't regenerate, still fresh
+            return;
+        }
+        
+        // Check if we should use OpenAI
+        const aiSettings = localStorageAvailable ?
+            JSON.parse(localStorage.getItem('bladderDiaryAiSettings') || '{"useOpenAI":false}') :
+            {useOpenAI: false};
+            
+        if (aiSettings.useOpenAI && aiSettings.openaiKey) {
+            generateAIInsight(currentType, aiSettings.openaiKey);
+        } else {
+            generateSimpleInsight(currentType);
+        }
+        
+        // Update last generation time and type
+        lastInsightTime = currentTime;
+        lastInsightType = currentType;
+        
+    } catch (error) {
+        console.error('Error generating insight:', error);
+        updateInsightMessage('Unable to generate insight. Please try again later.'); // Updated for animation
+    }
+}
+
+// Simple insight generation without AI
+function generateSimpleInsight(timeType) {
+    const currentDate = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    // Get today's entries
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const todayEntries = entries.filter(entry => entry.date === today);
+    
+    // Calculate statistics
+    const drinkEntries = todayEntries.filter(entry => entry.drinkAmount);
+    const urineEntries = todayEntries.filter(entry => entry.urineVolume);
+    
+    const totalDrinkAmount = drinkEntries.reduce((sum, entry) => sum + parseInt(entry.drinkAmount || 0), 0);
+    const urineCount = urineEntries.length;
+    
+    let urgencyLevels = {
+        '0': 0, '1': 0, '2': 0, '3': 0
+    };
+    
+    urineEntries.forEach(entry => {
+        if (entry.urgency) {
+            urgencyLevels[entry.urgency]++;
+        }
+    });
+    
+    const highUrgencyCount = urgencyLevels['2'] + urgencyLevels['3'];
+    
+    // Calculate time since last urination
+    let timeSinceLastUrination = null;
+    if (urineEntries.length > 0) {
+        // Sort by date and time
+        const sortedEntries = [...urineEntries].sort((a, b) => {
+            if (a.date !== b.date) return a.date > b.date ? -1 : 1;
+            return a.time > b.time ? -1 : 1;
+        });
+        
+        const lastEntry = sortedEntries[0];
+        const lastEntryTime = new Date(`${lastEntry.date}T${lastEntry.time}`);
+        const now = new Date();
+        
+        // Calculate time difference in hours
+        timeSinceLastUrination = Math.round((now - lastEntryTime) / (1000 * 60) / 60 * 10) / 10;
+    }
+    
+    // Generate message based on time type
+    let message = '';
+    
+    switch (timeType) {
+        case 'morning':
+            message = `<strong>Good morning!</strong> It's ${currentDate}.<br><br>`;
+            
+            if (urineCount === 0) {
+                message += "Don't forget to log your first urination of the day. A healthy start helps track your daily patterns.";
+            } else {
+                message += `You've recorded ${urineCount} urination event${urineCount !== 1 ? 's' : ''} this morning. `;
+                
+                if (timeSinceLastUrination !== null) {
+                    message += `It's been about <span class="insight-highlight">${timeSinceLastUrination}</span> hours since your last recorded urination. `;
+                }
+                
+                message += "Remember to stay hydrated throughout the day!";
+            }
+            break;
+            
+        case 'midMorning':
+            message = `<strong>Good mid-morning!</strong> It's ${currentDate}.<br><br>`;
+            
+            if (totalDrinkAmount === 0) {
+                message += "You haven't recorded any fluid intake yet today. Staying hydrated is important for bladder health. Aim for 1.5-2 liters throughout the day.";
+            } else {
+                message += `You've consumed <span class="insight-highlight">${totalDrinkAmount}ml</span> of fluids so far today. `;
+                
+                if (totalDrinkAmount < 500) {
+                    message += "Consider drinking more water to stay properly hydrated.";
+                } else {
+                    message += "Great job staying hydrated this morning!";
+                }
+            }
+            break;
+            
+        case 'afternoon':
+            message = `<strong>Good afternoon!</strong> It's ${currentDate}.<br><br>`;
+            
+            if (urineCount === 0 && totalDrinkAmount === 0) {
+                message += "No entries recorded yet today. Keeping track of your bladder habits helps establish healthy patterns.";
+            } else {
+                message += `Today's summary so far: ${urineCount} urination${urineCount !== 1 ? 's' : ''} and ${totalDrinkAmount}ml fluid intake. `;
+                
+                if (urineCount > 0 && totalDrinkAmount > 0) {
+                    const ratio = Math.round((urineCount / (totalDrinkAmount / 250)) * 10) / 10;
+                    
+                    if (ratio > 2) {
+                        message += `You're urinating <span class="insight-warning">more frequently</span> relative to your fluid intake. This could indicate bladder irritability.`;
+                    } else if (ratio < 0.5 && totalDrinkAmount > 1000) {
+                        message += `You're urinating <span class="insight-warning">less frequently</span> than expected for your fluid intake. Remember not to hold too long.`;
+                    } else {
+                        message += `Your urination frequency seems appropriate for your fluid intake.`;
+                    }
+                }
+            }
+            break;
+            
+        case 'lateAfternoon':
+            message = `<strong>Good late afternoon!</strong> It's ${currentDate}.<br><br>`;
+            
+            if (highUrgencyCount > 0) {
+                message += `You've experienced <span class="insight-warning">${highUrgencyCount}</span> episode${highUrgencyCount !== 1 ? 's' : ''} of moderate to severe urgency today. `;
+                
+                if (highUrgencyCount > 2) {
+                    message += "Try spacing out your fluid intake more evenly and consider reducing bladder irritants like caffeine or alcohol.";
+                } else {
+                    message += "Keep tracking to identify potential triggers.";
+                }
+            } else if (urineCount > 0) {
+                message += "You haven't recorded any episodes of high urgency today - that's excellent! ";
+                
+                if (timeSinceLastUrination !== null) {
+                    if (timeSinceLastUrination > 4) {
+                        message += `It's been <span class="insight-warning">${timeSinceLastUrination}</span> hours since your last urination. Remember to go at regular intervals.`;
+                    } else if (timeSinceLastUrination > 2) {
+                        message += `It's been about ${timeSinceLastUrination} hours since your last urination. That's a healthy interval.`;
+                    }
+                }
+            } else {
+                message += "Remember to log your bladder events to receive more personalized insights.";
+            }
+            break;
+            
+        case 'evening':
+            message = `<strong>Good evening!</strong> It's ${currentDate}.<br><br>`;
+            
+            if (totalDrinkAmount > 0 || urineCount > 0) {
+                message += `Today's summary: ${urineCount} urination${urineCount !== 1 ? 's' : ''} and ${totalDrinkAmount}ml fluid intake. `;
+                
+                if (totalDrinkAmount > 2000) {
+                    message += `You've had <span class="insight-highlight">plenty of fluids</span> today. `;
+                    message += "Consider reducing fluids 2-3 hours before bedtime for better sleep.";
+                } else if (totalDrinkAmount < 1000 && totalDrinkAmount > 0) {
+                    message += `Your fluid intake is <span class="insight-warning">lower than recommended</span>. `;
+                    message += "Try to increase your water consumption earlier in the day.";
+                }
+            } else {
+                message += "No entries recorded today. Remember that consistent tracking provides the most valuable insights.";
+            }
+            break;
+            
+        case 'night':
+            message = `<strong>Evening summary</strong> for ${currentDate}:<br><br>`;
+            
+            if (urineCount > 0 || totalDrinkAmount > 0) {
+                message += `You recorded ${urineCount} urination${urineCount !== 1 ? 's' : ''} and consumed ${totalDrinkAmount}ml of fluids today. `;
+                
+                // Stream quality assessment
+                const streamTypes = {};
+                urineEntries.forEach(entry => {
+                    if (entry.urineStream) {
+                        streamTypes[entry.urineStream] = (streamTypes[entry.urineStream] || 0) + 1;
+                    }
+                });
+                
+                if (Object.keys(streamTypes).length > 0) {
+                    const totalStreams = Object.values(streamTypes).reduce((a, b) => a + b, 0);
+                    const weakPercentage = ((streamTypes['Weak'] || 0) / totalStreams) * 100;
+                    
+                    if (weakPercentage > 50) {
+                        message += `<span class="insight-warning">Note:</span> The majority of your recorded urinations had a weak stream. `;
+                        message += "This may be worth discussing with your healthcare provider.";
+                    } else if (streamTypes['Strong'] && streamTypes['Strong'] / totalStreams > 0.7) {
+                        message += `<span class="insight-success">Good news:</span> Most of your recorded urinations had a strong stream, which is a positive sign.`;
+                    }
+                }
+            } else {
+                message += "No entries were recorded today. Consistent tracking helps identify patterns in your bladder health.";
+            }
+            
+            message += "<br><br>If you haven't already, consider logging your final urination before bed.";
+            break;
+            
+        case 'lateNight':
+            message = `<strong>Good night!</strong> It's the end of ${currentDate}.<br><br>`;
+            
+            if (urineCount > 0 || totalDrinkAmount > 0) {
+                message += `Today's final tally: ${urineCount} urination${urineCount !== 1 ? 's' : ''} and ${totalDrinkAmount}ml fluid intake. `;
+                
+                // Provide sleeping advice
+                if (totalDrinkAmount > 500 && new Date().getHours() >= 22) {
+                    message += `You've consumed <span class="insight-warning">${totalDrinkAmount}ml</span> of fluids in the evening. `;
+                    message += "If you find yourself waking up to urinate, consider reducing late evening fluids tomorrow.";
+                } else {
+                    message += "Get a good night's rest, and we'll continue tracking tomorrow.";
+                }
+            } else {
+                message += "No entries were recorded today. Tomorrow's a new day to establish healthy bladder habits.";
+            }
+            break;
+            
+        default:
+            message = `Hello! It's ${currentDate}.<br><br>`;
+            message += "Keep tracking your bladder habits to receive personalized insights.";
+    }
+    
+    // Display the message with a fade-in effect
+    insightMessage.style.opacity = '0';
+    setTimeout(() => {
+        updateInsightMessage(message); // Use our new function instead of directly setting innerHTML
+        insightMessage.style.transition = 'opacity 0.5s ease';
+        insightMessage.style.opacity = '1';
+    }, 300);
+}
+
+
+
+// Function for text streaming effect
+function streamText(element, text, speed = 20) {
+    // Start with empty text
+    let currentText = '';
+    let index = 0;
+    
+    // If there's a blinking cursor already, remove it
+    const existingCursors = element.querySelectorAll('.streaming-cursor');
+    existingCursors.forEach(cursor => cursor.remove());
+    
+    // Add blinking cursor
+    const cursor = document.createElement('span');
+    cursor.className = 'streaming-cursor';
+    element.appendChild(cursor);
+    
+    // Slightly randomize the speed for natural feel
+    const getRandomSpeed = () => speed + Math.random() * 20 - 10;
+    
+    // Stream the text character by character
+    const streamNextChar = () => {
+        if (index < text.length) {
+            currentText += text.charAt(index);
+            
+            // Update the text before the cursor
+            element.innerHTML = currentText;
+            
+            // Re-add the cursor
+            element.appendChild(cursor);
+            
+            index++;
+            
+            // Random delay for next character to mimic natural typing
+            const delay = getRandomSpeed();
+            
+            // Add slightly longer pauses at punctuation
+            const char = text.charAt(index - 1);
+            if (char === '.' || char === '!' || char === '?') {
+                setTimeout(streamNextChar, delay * 5);
+            } else if (char === ',' || char === ';' || char === ':') {
+                setTimeout(streamNextChar, delay * 3);
+            } else {
+                setTimeout(streamNextChar, delay);
+            }
+        } else {
+            // Remove cursor when done
+            setTimeout(() => {
+                cursor.remove();
+            }, 500);
+        }
+    };
+    
+    // Start streaming
+    streamNextChar();
+}
+
+// Function for elegant word-by-word fade-in effect
+function fadeInWords(element, text, speed = 40) {
+    // Clear existing content
+    element.innerHTML = '';
+    
+    // Split text into words
+    const words = text.split(' ');
+    
+    // Create a wrapper div to maintain proper text layout
+    const wrapper = document.createElement('div');
+    wrapper.style.width = '100%';
+    element.appendChild(wrapper);
+    
+    // Create a span for each word and add it to the element
+    words.forEach((word, index) => {
+        // Create span for the word
+        const wordSpan = document.createElement('span');
+        wordSpan.className = 'fade-in-word';
+        wordSpan.textContent = word;
+        
+        // Set a delay for each word to create a sequential fade-in effect
+        wordSpan.style.animationDelay = `${index * speed}ms`;
+        
+        // Add the word span to the wrapper
+        wrapper.appendChild(wordSpan);
+        
+        // Add a space after each word except the last one
+        if (index < words.length - 1) {
+            // Create a text node for the space to ensure proper rendering
+            const space = document.createTextNode(' ');
+            wrapper.appendChild(space);
+        }
+    });
+}
+
+// Enhanced generateAIInsight function with elegant fade-in
+async function generateAIInsight(timeType, apiKey) {
+    try {
+        // Get references to key elements
+        const motivationalContent = document.getElementById('motivationalContent');
+        const insightMessage = document.getElementById('insightMessage');
+        
+        // Apply subtle pulse animation to current content
+        insightMessage.classList.add('insight-refreshing');
+        
+        // Make sure loading message is hidden
+        const loadingMessage = document.getElementById('loadingMessage');
+        if (loadingMessage) {
+            loadingMessage.style.display = 'none';
+        }
+        
+        // Get today's entries
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const todayEntries = entries.filter(entry => entry.date === today);
+        
+        // Calculate data and prepare the prompt (same as before)
+        const timeTypeMap = {
+            'morning': 'Good morning (5-9am)',
+            'midMorning': 'Mid-morning (9am-12pm)',
+            'afternoon': 'Good afternoon (12-3pm)',
+            'lateAfternoon': 'Late afternoon (3-6pm)',
+            'evening': 'Good evening (6-9pm)',
+            'night': 'Night summary (9-11pm)',
+            'lateNight': 'Good night (11pm-5am)'
+        };
+        
+        const drinkEntries = todayEntries.filter(entry => entry.drinkAmount);
+        const urineEntries = todayEntries.filter(entry => entry.urineVolume);
+        
+        const totalDrinkAmount = drinkEntries.reduce((sum, entry) => sum + parseInt(entry.drinkAmount || 0), 0);
+        const urineCount = urineEntries.length;
+        
+        // Format the data for OpenAI (same as before)
+        const prompt = `Time of day: ${timeTypeMap[timeType]}
+Date: ${new Date().toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}
+
+Today's bladder diary data:
+- Urination events: ${urineCount}
+- Total fluid intake: ${totalDrinkAmount}ml
+- Drink entries: ${drinkEntries.map(e => `${e.time} - ${e.drinkType}: ${e.drinkAmount}ml`).join(', ')}
+- Urination entries: ${urineEntries.map(e => `${e.time} - Duration: ${e.urineVolume}s, Urgency: ${e.urgency || 'Not recorded'}, Stream: ${e.urineStream || 'Not recorded'}`).join(', ')}
+
+Based on this data, generate a brief, personalized insight message for the user's bladder diary app. The message should:
+1. Begin with a time-appropriate greeting
+2. Be about 2-3 sentences long
+3. Include at least one piece of specific feedback or advice based on their data
+4. Be encouraging and motivational
+5. Use plain language that a patient would understand
+6. Sound friendly and supportive, not clinical
+7. If needed, mention that more data would help provide better insights
+
+Respond only with the message text that should be shown to the user. No headers or additional explanation.`;
+
+        // Make API request to OpenAI (same as before)
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 150
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const aiMessage = data.choices[0].message.content.trim();
+        
+         // Replace the completion part near the end with:
+        insightMessage.classList.remove('insight-refreshing');
+        motivationalContent.classList.add('insight-glow');
+        
+        // Use smooth transition for the content
+        updateInsightMessage(''); // First clear content to reset height
+        setTimeout(() => {
+            fadeInWords(insightMessage, aiMessage, 40);
+        }, 50);
+        
+        // Remove glow after fade-in completes
+        const wordCount = aiMessage.split(' ').length;
+        const totalFadeTime = wordCount * 40 + 600;
+        setTimeout(() => {
+            motivationalContent.classList.remove('insight-glow');
+        }, totalFadeTime);
+        
+    } catch (error) {
+        console.error('Error generating AI insight:', error);
+        
+        // Ensure loading message is gone
+        const loadingMessage = document.getElementById('loadingMessage');
+        if (loadingMessage) {
+            loadingMessage.style.display = 'none';
+        }
+        
+        // Show error with gentle fade
+        const insightMessage = document.getElementById('insightMessage');
+        if (insightMessage) {
+            insightMessage.classList.remove('insight-refreshing');
+            fadeInWords(insightMessage, `Unable to generate insight: ${error.message}. Please try again.`, 30);
+        }
+    }
+}
+
+
+
+// You might also want to add a subtle animation when the user clicks the refresh button
+// Add this to your existing refreshInsightBtn event listener:
+
+refreshInsightBtn.addEventListener('click', function() {
+    generateInsight(true);
+    
+    // Add gradient pulse effect to the entire motivational section
+    const motivationalSection = document.getElementById('motivationalSection');
+    motivationalSection.classList.add('insight-glow');
+    
+    setTimeout(() => {
+        motivationalSection.classList.remove('insight-glow');
+    }, 2000);
+    
+    // Original rotation animation for the refresh icon
+    refreshInsightBtn.querySelector('svg').style.transition = 'transform 0.5s ease';
+    refreshInsightBtn.querySelector('svg').style.transform = 'rotate(360deg)';
+    
+    setTimeout(() => {
+        refreshInsightBtn.querySelector('svg').style.transition = '';
+        refreshInsightBtn.querySelector('svg').style.transform = '';
+    }, 500);
+});
+
+// The issue might also be in the motivationalContent div structure
+// Add this debugging code to run once to identify any structure issues:
+function debugMotivationalContent() {
+    console.log("Debugging motivational content structure:");
+    
+    const motivationalContent = document.getElementById('motivationalContent');
+    if (motivationalContent) {
+        console.log("Motivational content found:", motivationalContent);
+        console.log("Children:", motivationalContent.children);
+        
+        const loadingMessage = document.getElementById('loadingMessage');
+        if (loadingMessage) {
+            console.log("Loading message found:", loadingMessage);
+            console.log("Loading message classes:", loadingMessage.className);
+            console.log("Loading message display style:", loadingMessage.style.display);
+            console.log("Loading message computed style:", window.getComputedStyle(loadingMessage).display);
+        } else {
+            console.error("Loading message element not found by ID");
+        }
+        
+        const insightMessage = document.getElementById('insightMessage');
+        if (insightMessage) {
+            console.log("Insight message found:", insightMessage);
+            console.log("Insight message style:", insightMessage.style);
+        } else {
+            console.error("Insight message element not found by ID");
+        }
+    } else {
+        console.error("Motivational content element not found");
+    }
+}
+
+// Here's the improved version of the function that should create a smooth animation
+function updateInsightMessage(newMessage) {
+    const content = document.getElementById('motivationalContent');
+    const messageElement = document.getElementById('insightMessage');
+
+    // Step 1: Capture the current height and set it explicitly
+    const currentHeight = content.scrollHeight;
+    content.style.height = `${currentHeight}px`;
+    
+    // Step 2: Force a reflow to make sure the fixed height is applied
+    void content.offsetHeight;
+    
+    // Step 3: Update the content
+    messageElement.innerHTML = newMessage;
+    
+    // Step 4: Allow the browser to calculate the new content height
+    // by putting this in the next animation frame
+    requestAnimationFrame(() => {
+        // Step 5: Set the new height to trigger transition
+        const newHeight = messageElement.scrollHeight;
+        content.style.height = `${newHeight}px`;
+        
+        // Step 6: Reset to auto height after transition completes
+        setTimeout(() => {
+            content.style.height = 'auto';
+        }, 300); // Match transition duration
+    });
+}
+
+// Run the debug function once
+setTimeout(debugMotivationalContent, 1000);
         
         // Initialize app
 entryForm.style.display = 'none';
@@ -2991,6 +4203,12 @@ setCurrentDateTime();
 
 // Load entries first
 loadEntries(); 
+
+// Load AI settings
+loadAiSettings();
+
+// Generate initial insight
+generateInsight();
 
 // Only load sample data if no entries exist at all
 if (entries.length === 0) {
@@ -3568,6 +4786,84 @@ function optimizeChartContainers() {
 // Call this function on page load and window resize
 window.addEventListener('load', optimizeChartContainers);
 window.addEventListener('resize', optimizeChartContainers);
+
+// Setup the AI controls dropdown
+function setupAIControlsDropdown() {
+    const aiControlsToggle = document.getElementById('aiControlsToggle');
+    const aiControlsMenu = document.getElementById('aiControlsMenu');
+    const refreshInsightBtn = document.getElementById('refreshInsightBtn');
+    const toggleAiSettings = document.getElementById('toggleAiSettings');
+    
+    if (!aiControlsToggle || !aiControlsMenu || !refreshInsightBtn || !toggleAiSettings) {
+        console.error("Could not find all required elements for AI controls");
+        return;
+    }
+    
+    // Toggle dropdown when clicking the toggle button
+    aiControlsToggle.addEventListener('click', function(e) {
+        e.stopPropagation(); // Prevent document click from immediately closing it
+        const isExpanded = this.classList.toggle('expanded');
+        aiControlsMenu.classList.toggle('expanded', isExpanded);
+    });
+    
+    // Handle the refresh insight button click
+    refreshInsightBtn.addEventListener('click', function(e) {
+        e.stopPropagation(); // Prevent document click handler
+        generateInsight(true); // Generate a new insight
+        
+        // Add subtle rotation animation
+        const svgIcon = this.querySelector('svg');
+        if (svgIcon) {
+            svgIcon.style.transition = 'transform 0.5s ease';
+            svgIcon.style.transform = 'rotate(360deg)';
+            setTimeout(() => {
+                svgIcon.style.transition = '';
+                svgIcon.style.transform = '';
+            }, 500);
+        }
+        
+        // Close the dropdown
+        aiControlsToggle.classList.remove('expanded');
+        aiControlsMenu.classList.remove('expanded');
+    });
+    
+    // Handle the AI settings button click
+    toggleAiSettings.addEventListener('click', function(e) {
+        e.stopPropagation(); // Prevent document click handler
+        
+        // Close the dropdown
+        aiControlsToggle.classList.remove('expanded');
+        aiControlsMenu.classList.remove('expanded');
+        
+        // Show the settings panel - assuming aiSettingsPanel is the ID of your settings panel
+        const aiSettingsPanel = document.getElementById('aiSettingsPanel');
+        if (aiSettingsPanel) {
+            aiSettingsPanel.classList.remove('hidden');
+        }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        if (aiControlsMenu.classList.contains('expanded')) {
+            aiControlsToggle.classList.remove('expanded');
+            aiControlsMenu.classList.remove('expanded');
+        }
+    });
+}
+
+// Call this function after the DOM is loaded
+document.addEventListener('DOMContentLoaded', setupAIControlsDropdown);
+
+// Also call it now in case the DOM is already loaded
+setupAIControlsDropdown();
     </script>
+
+<script>
+    document.getElementById('aiControlsToggle').onclick = function(e) {
+      e.stopPropagation();
+      document.getElementById('aiControlsMenu').classList.toggle('expanded');
+      this.classList.toggle('expanded');
+    };
+  </script>    
 </body>
 </html>
