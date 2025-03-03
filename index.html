@@ -1176,21 +1176,7 @@
     transform: rotate(180deg);
 }
 
-.ai-controls-menu {
-    position: absolute;
-    top: 36px;
-    right: 0;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 8px;
-    width: 150px;
-    z-index: 10;
-    opacity: 0;
-    transform: translateY(-10px);
-    pointer-events: none;
-    transition: all 0.2s ease;
-}
+
 
 .ai-controls-menu.expanded {
     opacity: 1;
@@ -1288,27 +1274,9 @@
     transform: rotate(180deg);
 }
 
-.ai-controls-menu {
-    position: absolute;
-    top: 36px;
-    right: 0;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 8px;
-    width: 150px;
-    z-index: 10;
-    opacity: 0;
-    transform: translateY(-10px);
-    pointer-events: none;
-    transition: all 0.2s ease;
-}
 
-.ai-controls-menu.expanded {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: all;
-}
+
+
 
 .ai-controls-item {
     display: flex;
@@ -1368,6 +1336,7 @@
 .ai-controls-menu {
     position: absolute;
     top: 36px;
+    z-index: 20;
     right: 0;
     background-color: white;
     border-radius: 8px;
@@ -1381,11 +1350,6 @@
     transition: all 0.2s ease;
 }
 
-.ai-controls-menu.expanded {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: all;
-}
 
 .ai-controls-item {
     display: flex;
@@ -3558,17 +3522,39 @@ let lastInsightType = null;
 
 // AI settings management
 function loadAiSettings() {
+    const aiSettingsPanel = document.getElementById('aiSettingsPanel');
+    const openaiKeyInput = document.getElementById('openaiKey');
+    const useOpenAICheckbox = document.getElementById('useOpenAI');
+    const saveAiSettingsBtn = document.getElementById('saveAiSettings');
+
     if (localStorageAvailable) {
-        const storedSettings = localStorage.getItem('bladderDiaryAiSettings');
-        if (storedSettings) {
-            try {
-                const settings = JSON.parse(storedSettings);
-                openaiKeyInput.value = settings.openaiKey || '';
-                useOpenAICheckbox.checked = settings.useOpenAI || false;
-            } catch (e) {
-                console.error('Error loading AI settings:', e);
-            }
+        let aiSettings = JSON.parse(localStorage.getItem('bladderDiaryAiSettings') || '{"useOpenAI":false,"openaiKey":""}');
+        
+        // Ensure useOpenAI is false if no key exists
+        if (!aiSettings.openaiKey || aiSettings.openaiKey.trim() === '') {
+            aiSettings.useOpenAI = false;
         }
+
+        openaiKeyInput.value = aiSettings.openaiKey || '';
+        useOpenAICheckbox.checked = aiSettings.useOpenAI || false;
+
+        saveAiSettingsBtn.addEventListener('click', () => {
+            const newSettings = {
+                useOpenAI: useOpenAICheckbox.checked,
+                openaiKey: openaiKeyInput.value.trim()
+            };
+            
+            // Disable AI use if no key is provided
+            if (!newSettings.openaiKey) {
+                newSettings.useOpenAI = false;
+                useOpenAICheckbox.checked = false;
+            }
+
+            localStorage.setItem('bladderDiaryAiSettings', JSON.stringify(newSettings));
+            showMessage('AI settings saved', 'success');
+            aiSettingsPanel.classList.add('hidden');
+            generateInsight(true); // Refresh insight with new settings
+        });
     }
 }
 
@@ -3636,49 +3622,59 @@ function getInsightType() {
     return 'lateNight';
 }
 
-// Generate insight message based on time and data
-// Generate insight message based on time and data
+// Replace the current generateInsight function with this fixed version
 function generateInsight(forceRefresh = false) {
-    try {
-        const currentType = getInsightType();
-        const currentTime = new Date().getTime();
-        const nowFormatted = new Date().toLocaleDateString('en-US', {
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: true
-        });
-        
-        // Only regenerate if:
-        // 1. We're forcing a refresh, or
-        // 2. It's been at least 1 hour since last generation, or
-        // 3. The message type has changed
-        const timeDiff = lastInsightTime ? (currentTime - lastInsightTime) / (1000 * 60 * 60) : 24;
-        
-        if (!forceRefresh && lastInsightTime && timeDiff < 1 && currentType === lastInsightType) {
-            // Don't regenerate, still fresh
-            return;
-        }
-        
-        // Check if we should use OpenAI
-        const aiSettings = localStorageAvailable ?
-            JSON.parse(localStorage.getItem('bladderDiaryAiSettings') || '{"useOpenAI":false}') :
-            {useOpenAI: false};
-            
-        if (aiSettings.useOpenAI && aiSettings.openaiKey) {
-            generateAIInsight(currentType, aiSettings.openaiKey);
-        } else {
-            generateSimpleInsight(currentType);
-        }
-        
-        // Update last generation time and type
-        lastInsightTime = currentTime;
-        lastInsightType = currentType;
-        
-    } catch (error) {
-        console.error('Error generating insight:', error);
-        updateInsightMessage('Unable to generate insight. Please try again later.'); // Updated for animation
+  const loadingMessage = document.getElementById('loadingMessage');
+  if (loadingMessage) {
+    loadingMessage.classList.remove('hidden');
+  }
+  
+  try {
+    const currentType = getInsightType();
+    const currentTime = new Date().getTime();
+    const timeDiff = lastInsightTime ? (currentTime - lastInsightTime) / (1000 * 60 * 60) : 24;
+    
+    // Use cached insight if fresh and not forced
+    if (!forceRefresh && lastInsightTime && timeDiff < 1 && currentType === lastInsightType) {
+      console.log('Using cached insight (still fresh)');
+      // Ensure spinner is hidden
+      if (loadingMessage) loadingMessage.classList.add('hidden');
+      return;
     }
+    
+    // Get AI settings from localStorage (or default to not using AI)
+    const aiSettings = localStorageAvailable
+      ? JSON.parse(localStorage.getItem('bladderDiaryAiSettings') || '{"useOpenAI":false}')
+      : { useOpenAI: false };
+    
+    // If AI is enabled and a key is provided, use AI insight; otherwise, fall back to simple insight
+    if (aiSettings.useOpenAI && aiSettings.openaiKey) {
+      generateAIInsight(currentType, aiSettings.openaiKey)
+        .catch((error) => {
+          console.error('Error generating AI insight:', error);
+          updateInsightMessage('Unable to generate insight. Please try again.');
+        })
+        .finally(() => {
+          if (loadingMessage) loadingMessage.classList.add('hidden');
+        });
+    } else {
+      generateSimpleInsight(currentType);
+    }
+    
+    // Update caching values
+    lastInsightTime = currentTime;
+    lastInsightType = currentType;
+  } catch (error) {
+    console.error('Error generating insight:', error);
+    updateInsightMessage('Unable to generate insight. Please try again.');
+  } finally {
+    // Fallback: ensure that the spinner is hidden after 500ms if not already removed.
+    setTimeout(() => {
+      if (loadingMessage) loadingMessage.classList.add('hidden');
+    }, 500);
+  }
 }
+
 
 // Simple insight generation without AI
 function generateSimpleInsight(timeType) {
@@ -3988,6 +3984,12 @@ function fadeInWords(element, text, speed = 40) {
 
 // Enhanced generateAIInsight function with elegant fade-in
 async function generateAIInsight(timeType, apiKey) {
+    const motivationalContent = document.getElementById('motivationalContent');
+    const insightMessage = document.getElementById('insightMessage');
+    const loadingMessage = document.getElementById('loadingMessage');
+
+    insightMessage.classList.add('insight-refreshing');
+
     try {
         // Get references to key elements
         const motivationalContent = document.getElementById('motivationalContent');
@@ -3996,17 +3998,13 @@ async function generateAIInsight(timeType, apiKey) {
         // Apply subtle pulse animation to current content
         insightMessage.classList.add('insight-refreshing');
         
-        // Make sure loading message is hidden
-        const loadingMessage = document.getElementById('loadingMessage');
-        if (loadingMessage) {
-            loadingMessage.style.display = 'none';
-        }
-        
+        // ⚠️ Loading indicator is managed by the parent function now
+
         // Get today's entries
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         const todayEntries = entries.filter(entry => entry.date === today);
         
-        // Calculate data and prepare the prompt (same as before)
+        // Calculate data and prepare the prompt
         const timeTypeMap = {
             'morning': 'Good morning (5-9am)',
             'midMorning': 'Mid-morning (9am-12pm)',
@@ -4023,7 +4021,7 @@ async function generateAIInsight(timeType, apiKey) {
         const totalDrinkAmount = drinkEntries.reduce((sum, entry) => sum + parseInt(entry.drinkAmount || 0), 0);
         const urineCount = urineEntries.length;
         
-        // Format the data for OpenAI (same as before)
+        // Format the data for OpenAI
         const prompt = `Time of day: ${timeTypeMap[timeType]}
 Date: ${new Date().toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}
 
@@ -4044,7 +4042,10 @@ Based on this data, generate a brief, personalized insight message for the user'
 
 Respond only with the message text that should be shown to the user. No headers or additional explanation.`;
 
-        // Make API request to OpenAI (same as before)
+        // Make API request to OpenAI with proper timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
+        
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -4061,52 +4062,88 @@ Respond only with the message text that should be shown to the user. No headers 
                 ],
                 temperature: 0.7,
                 max_tokens: 150
-            })
+            }),
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
             throw new Error(`API request failed with status ${response.status}`);
         }
-        
+
         const data = await response.json();
         const aiMessage = data.choices[0].message.content.trim();
-        
-         // Replace the completion part near the end with:
+
         insightMessage.classList.remove('insight-refreshing');
         motivationalContent.classList.add('insight-glow');
-        
-        // Use smooth transition for the content
-        updateInsightMessage(''); // First clear content to reset height
+        updateInsightMessage(''); // Clear content first
         setTimeout(() => {
             fadeInWords(insightMessage, aiMessage, 40);
         }, 50);
-        
-        // Remove glow after fade-in completes
+
         const wordCount = aiMessage.split(' ').length;
         const totalFadeTime = wordCount * 40 + 600;
         setTimeout(() => {
             motivationalContent.classList.remove('insight-glow');
         }, totalFadeTime);
-        
+
     } catch (error) {
         console.error('Error generating AI insight:', error);
-        
-        // Ensure loading message is gone
-        const loadingMessage = document.getElementById('loadingMessage');
-        if (loadingMessage) {
-            loadingMessage.style.display = 'none';
-        }
-        
-        // Show error with gentle fade
-        const insightMessage = document.getElementById('insightMessage');
-        if (insightMessage) {
-            insightMessage.classList.remove('insight-refreshing');
-            fadeInWords(insightMessage, `Unable to generate insight: ${error.message}. Please try again.`, 30);
-        }
+        insightMessage.classList.remove('insight-refreshing');
+        if (loadingMessage) loadingMessage.classList.add('hidden');
+        fadeInWords(insightMessage, `Unable to generate insight: ${error.message}. Please configure your API key in AI settings.`, 30);
+    } finally {
+        if (loadingMessage) loadingMessage.classList.add('hidden'); // Ensure spinner hides even if uncaught errors occur
     }
 }
 
 
+document.addEventListener('DOMContentLoaded', function() {
+    // Fix for AI controls toggle
+    const aiControlsToggle = document.getElementById('aiControlsToggle');
+    const aiControlsMenu = document.getElementById('aiControlsMenu');
+    
+    if (aiControlsToggle && aiControlsMenu) {
+        // Remove existing event listeners (if any)
+        aiControlsToggle.replaceWith(aiControlsToggle.cloneNode(true));
+        
+        // Re-get the element after replacement
+        const newToggle = document.getElementById('aiControlsToggle');
+        
+        // Add the event listener directly (not using setupAIControlsDropdown)
+        newToggle.addEventListener('click', function(e) {
+            console.log('AI controls toggle clicked');
+            e.stopPropagation();
+            const isExpanded = this.classList.toggle('expanded');
+            aiControlsMenu.classList.toggle('expanded', isExpanded);
+        });
+    }
+});
+window.addEventListener('load', function() {
+    console.log('Page fully loaded, initializing app components');
+    
+    // Hide loading message initially
+    const loadingMessage = document.getElementById('loadingMessage');
+    if (loadingMessage) {
+        loadingMessage.classList.add('hidden');
+    }
+    
+    // Ensure AI controls are set up properly
+    setupAIControlsDropdown();
+    
+    // Generate initial insight with proper error handling
+    try {
+        generateInsight();
+    } catch (e) {
+        console.error('Error during initial insight generation:', e);
+        // Make sure default message is shown if generation fails
+        const insightMessage = document.getElementById('insightMessage');
+        if (insightMessage) {
+            insightMessage.innerHTML = 'Welcome to your Bladder Diary. Track your entries to receive personalized insights.';
+        }
+    }
+});
 
 // You might also want to add a subtle animation when the user clicks the refresh button
 // Add this to your existing refreshInsightBtn event listener:
@@ -4856,6 +4893,127 @@ document.addEventListener('DOMContentLoaded', setupAIControlsDropdown);
 
 // Also call it now in case the DOM is already loaded
 setupAIControlsDropdown();
+
+
+
+// Fix for the loading spinner issue
+
+// 1. Add this style fix to make sure .hidden works correctly
+const fixStyle = document.createElement('style');
+fixStyle.textContent = `
+  /* Fix for loading spinner visibility */
+  #loadingMessage.hidden {
+    display: none !important;
+    opacity: 0 !important; 
+    visibility: hidden !important;
+  }
+`;
+document.head.appendChild(fixStyle);
+
+// 2. Helper functions to properly show and hide the spinner
+function showLoadingSpinner() {
+  const spinner = document.getElementById('loadingMessage');
+  if (spinner) {
+    spinner.classList.remove('hidden');
+    spinner.style.display = 'flex';
+  }
+}
+
+function hideLoadingSpinner() {
+  const spinner = document.getElementById('loadingMessage');
+  if (spinner) {
+    spinner.classList.add('hidden');
+    spinner.style.display = 'none';
+  }
+}
+
+// 3. Replacement generateInsight function
+function generateInsight(forceRefresh = false) {
+  // Always hide spinner at the start to reset state
+  hideLoadingSpinner();
+  
+  try {
+    console.log('Starting insight generation...');
+    
+    const currentType = getInsightType();
+    const currentTime = new Date().getTime();
+    const timeDiff = lastInsightTime ? (currentTime - lastInsightTime) / (1000 * 60 * 60) : 24;
+    
+    // Use cached insight if appropriate
+    if (!forceRefresh && lastInsightTime && timeDiff < 1 && currentType === lastInsightType) {
+      console.log('Using cached insight (still fresh)');
+      return;
+    }
+    
+    // Show spinner only for forced refresh
+    if (forceRefresh) {
+      showLoadingSpinner();
+    }
+    
+    // Set a failsafe timer to hide spinner after 3 seconds no matter what
+    const failsafeTimer = setTimeout(hideLoadingSpinner, 3000);
+    
+    // Get AI settings
+    let aiSettings = { useOpenAI: false };
+    if (localStorageAvailable) {
+      try {
+        const settingsStr = localStorage.getItem('bladderDiaryAiSettings');
+        if (settingsStr) {
+          aiSettings = JSON.parse(settingsStr);
+        }
+      } catch (error) {
+        console.error('Error reading AI settings:', error);
+      }
+    }
+    
+    // Choose insight generation method
+    if (aiSettings.useOpenAI && aiSettings.openaiKey && aiSettings.openaiKey.trim().length > 20) {
+      // Use AI insight with proper error handling
+      generateAIInsight(currentType, aiSettings.openaiKey)
+        .catch(error => {
+          console.error('AI insight failed:', error);
+          generateSimpleInsight(currentType);
+        })
+        .finally(() => {
+          hideLoadingSpinner();
+          clearTimeout(failsafeTimer);
+        });
+    } else {
+      // Use simple insight
+      generateSimpleInsight(currentType);
+      hideLoadingSpinner();
+      clearTimeout(failsafeTimer);
+    }
+    
+    // Update tracking state
+    lastInsightTime = currentTime;
+    lastInsightType = currentType;
+  } catch (error) {
+    console.error('Error generating insight:', error);
+    hideLoadingSpinner();
+    
+    // Show error message
+    const insightMessage = document.getElementById('insightMessage');
+    if (insightMessage) {
+      insightMessage.innerHTML = 'Unable to generate insight. Please try again.';
+    }
+  }
+}
+
+// 4. Make the spinner invisible immediately
+hideLoadingSpinner();
+
+// Once the page is fully loaded, ensure our changes are applied
+window.addEventListener('load', function() {
+  // Replace the original function
+  window.generateInsight = generateInsight;
+  
+  // Make sure spinner is hidden
+  hideLoadingSpinner();
+  
+  // Refresh insight with the new function
+  setTimeout(generateInsight, 500);
+});
     </script>
 
 <script>
@@ -4865,5 +5023,8 @@ setupAIControlsDropdown();
       this.classList.toggle('expanded');
     };
   </script>    
+
+
+
 </body>
 </html>
