@@ -4100,26 +4100,39 @@ Respond only with the message text that should be shown to the user. No headers 
 
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Fix for AI controls toggle
-    const aiControlsToggle = document.getElementById('aiControlsToggle');
-    const aiControlsMenu = document.getElementById('aiControlsMenu');
+  // Fix for AI controls toggle
+  const aiControlsToggle = document.getElementById('aiControlsToggle');
+  const aiControlsMenu = document.getElementById('aiControlsMenu');
+  
+  if (aiControlsToggle && aiControlsMenu) {
+    // Replace the SVG with a left-pointing chevron
+    aiControlsToggle.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    `;
     
-    if (aiControlsToggle && aiControlsMenu) {
-        // Remove existing event listeners (if any)
-        aiControlsToggle.replaceWith(aiControlsToggle.cloneNode(true));
-        
-        // Re-get the element after replacement
-        const newToggle = document.getElementById('aiControlsToggle');
-        
-        // Add the event listener directly (not using setupAIControlsDropdown)
-        newToggle.addEventListener('click', function(e) {
-            console.log('AI controls toggle clicked');
-            e.stopPropagation();
-            const isExpanded = this.classList.toggle('expanded');
-            aiControlsMenu.classList.toggle('expanded', isExpanded);
-        });
-    }
+    // Change the style so that when expanded, it rotates -90° (pointing down)
+    const styleEl = document.createElement('style');
+    styleEl.textContent = '.ai-controls-toggle.expanded { transform: rotate(-90deg) !important; }';
+    document.head.appendChild(styleEl);
+    
+    // Remove existing event listeners (if any)
+    aiControlsToggle.replaceWith(aiControlsToggle.cloneNode(true));
+    
+    // Re-get the element after replacement
+    const newToggle = document.getElementById('aiControlsToggle');
+    
+    // Add the event listener directly
+    newToggle.addEventListener('click', function(e) {
+      console.log('AI controls toggle clicked');
+      e.stopPropagation();
+      const isExpanded = this.classList.toggle('expanded');
+      aiControlsMenu.classList.toggle('expanded', isExpanded);
+    });
+  }
 });
+
 window.addEventListener('load', function() {
     console.log('Page fully loaded, initializing app components');
     
