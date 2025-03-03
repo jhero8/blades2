@@ -3686,11 +3686,29 @@ function generateSimpleInsight(timeType) {
     
     // Get today's entries
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const todayEntries = entries.filter(entry => entry.date === today);
+    
+    // Calculate yesterday's date for late night insights
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    // For late night (12am-5am), use yesterday's data
+    // For all other times, use today's data
+    const targetDate = (timeType === 'lateNight') ? yesterdayStr : today;
+    const targetDateEntries = entries.filter(entry => entry.date === targetDate);
+    
+    // Format the target date for display
+    const targetDateFormatted = (timeType === 'lateNight')
+        ? yesterday.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric'
+          })
+        : currentDate;
     
     // Calculate statistics
-    const drinkEntries = todayEntries.filter(entry => entry.drinkAmount);
-    const urineEntries = todayEntries.filter(entry => entry.urineVolume);
+    const drinkEntries = targetDateEntries.filter(entry => entry.drinkAmount);
+    const urineEntries = targetDateEntries.filter(entry => entry.urineVolume);
     
     const totalDrinkAmount = drinkEntries.reduce((sum, entry) => sum + parseInt(entry.drinkAmount || 0), 0);
     const urineCount = urineEntries.length;
@@ -3858,23 +3876,48 @@ function generateSimpleInsight(timeType) {
             message += "<br><br>If you haven't already, consider logging your final urination before bed.";
             break;
             
-        case 'lateNight':
-            message = `<strong>Good night!</strong> It's the end of ${currentDate}.<br><br>`;
-            
-            if (urineCount > 0 || totalDrinkAmount > 0) {
-                message += `Today's final tally: ${urineCount} urination${urineCount !== 1 ? 's' : ''} and ${totalDrinkAmount}ml fluid intake. `;
-                
-                // Provide sleeping advice
-                if (totalDrinkAmount > 500 && new Date().getHours() >= 22) {
-                    message += `You've consumed <span class="insight-warning">${totalDrinkAmount}ml</span> of fluids in the evening. `;
-                    message += "If you find yourself waking up to urinate, consider reducing late evening fluids tomorrow.";
-                } else {
-                    message += "Get a good night's rest, and we'll continue tracking tomorrow.";
-                }
-            } else {
-                message += "No entries were recorded today. Tomorrow's a new day to establish healthy bladder habits.";
+            case 'lateNight':
+    message = `<strong>Good night!</strong> It's the end of ${targetDateFormatted}.<br><br>`;
+    
+    if (urineCount > 0 || totalDrinkAmount > 0) {
+        message += `Yesterday's summary: ${urineCount} urination${urineCount !== 1 ? 's' : ''} and ${totalDrinkAmount}ml fluid intake. `;
+        
+        // Stream quality assessment
+        const streamTypes = {};
+        urineEntries.forEach(entry => {
+            if (entry.urineStream) {
+                streamTypes[entry.urineStream] = (streamTypes[entry.urineStream] || 0) + 1;
             }
-            break;
+        });
+        
+        // Provide sleeping advice based on yesterday's data
+        if (Object.keys(streamTypes).length > 0) {
+            const totalStreams = Object.values(streamTypes).reduce((a, b) => a + b, 0);
+            const weakPercentage = ((streamTypes['Weak'] || 0) / totalStreams) * 100;
+            
+            if (weakPercentage > 50) {
+                message += `<span class="insight-warning">Note:</span> The majority of your recorded urinations yesterday had a weak stream. `;
+                message += "This may be worth discussing with your healthcare provider.";
+            } else if (streamTypes['Strong'] && streamTypes['Strong'] / totalStreams > 0.7) {
+                message += `<span class="insight-success">Good news:</span> Most of your recorded urinations had a strong stream, which is a positive sign.`;
+            }
+        }
+        
+        // Add advice based on urgency patterns
+        if (highUrgencyCount > 0) {
+            message += `<br><br>You experienced <span class="insight-warning">${highUrgencyCount}</span> episode${highUrgencyCount !== 1 ? 's' : ''} of moderate to severe urgency yesterday. `;
+            
+            if (highUrgencyCount > 2) {
+                message += "Try spacing out your fluid intake more evenly today and consider reducing bladder irritants like caffeine or alcohol.";
+            }
+        }
+        
+        message += "<br><br>Get a good night's rest, and you can continue tracking when you wake up.";
+    } else {
+        // If there's no data for yesterday either, provide general advice
+        message += "No entries were recorded yesterday. Remember that tracking your bladder habits helps establish patterns and provides more personalized insights. Try to log your first entry when you wake up tomorrow morning.";
+    }
+    break;
             
         default:
             message = `Hello! It's ${currentDate}.<br><br>`;
@@ -3998,11 +4041,21 @@ async function generateAIInsight(timeType, apiKey) {
         // Apply subtle pulse animation to current content
         insightMessage.classList.add('insight-refreshing');
         
-        // ⚠️ Loading indicator is managed by the parent function now
-
-        // Get today's entries
+        // Get today's and yesterday's dates
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-        const todayEntries = entries.filter(entry => entry.date === today);
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0]; // YYYY-MM-DD
+        
+        // For late night (12am-5am), use yesterday's data as the primary focus
+        // For all other times, use today's data
+        const primaryDate = (timeType === 'lateNight') ? yesterdayStr : today;
+        const primaryDateEntries = entries.filter(entry => entry.date === primaryDate);
+        
+        // Format the date for the prompt
+        const dateForDisplay = (timeType === 'lateNight')
+            ? yesterday.toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})
+            : new Date().toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'});
         
         // Calculate data and prepare the prompt
         const timeTypeMap = {
@@ -4012,25 +4065,33 @@ async function generateAIInsight(timeType, apiKey) {
             'lateAfternoon': 'Late afternoon (3-6pm)',
             'evening': 'Good evening (6-9pm)',
             'night': 'Night summary (9-11pm)',
-            'lateNight': 'Good night (11pm-5am)'
+            'lateNight': 'Late night/Early morning (11pm-5am)'
         };
         
-        const drinkEntries = todayEntries.filter(entry => entry.drinkAmount);
-        const urineEntries = todayEntries.filter(entry => entry.urineVolume);
+        const drinkEntries = primaryDateEntries.filter(entry => entry.drinkAmount);
+        const urineEntries = primaryDateEntries.filter(entry => entry.urineVolume);
         
         const totalDrinkAmount = drinkEntries.reduce((sum, entry) => sum + parseInt(entry.drinkAmount || 0), 0);
         const urineCount = urineEntries.length;
         
         // Format the data for OpenAI
-        const prompt = `Time of day: ${timeTypeMap[timeType]}
-Date: ${new Date().toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}
+        let prompt = `Time of day: ${timeTypeMap[timeType]}
+Date: ${dateForDisplay}
 
-Today's bladder diary data:
+${timeType === 'lateNight' ? "Yesterday's" : "Today's"} bladder diary data:
 - Urination events: ${urineCount}
 - Total fluid intake: ${totalDrinkAmount}ml
 - Drink entries: ${drinkEntries.map(e => `${e.time} - ${e.drinkType}: ${e.drinkAmount}ml`).join(', ')}
 - Urination entries: ${urineEntries.map(e => `${e.time} - Duration: ${e.urineVolume}s, Urgency: ${e.urgency || 'Not recorded'}, Stream: ${e.urineStream || 'Not recorded'}`).join(', ')}
+`;
 
+        if (timeType === 'lateNight') {
+            prompt += `
+Since it's late night/early morning, focus on providing a helpful summary of yesterday's data with advice for today.
+`;
+        }
+
+        prompt += `
 Based on this data, generate a brief, personalized insight message for the user's bladder diary app. The message should:
 1. Begin with a time-appropriate greeting
 2. Be about 2-3 sentences long
